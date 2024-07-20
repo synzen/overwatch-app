@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:overwatchapp/data/commute_route.repository.dart';
 import 'package:overwatchapp/routes_list.dart';
 import 'package:overwatchapp/saved_commute.dart';
@@ -54,10 +55,25 @@ class MyApp extends StatelessWidget {
           title: const Text(appTitle),
         ),
         floatingActionButton: const AddStopButton(),
-        body: const SingleChildScrollView(
+        body: SingleChildScrollView(
           child: Column(
             children: [
-              SavedRoutesList(),
+              const SavedRoutesList(),
+              // random button
+              ElevatedButton(
+                onPressed: () async {
+                  printForDebugging('Random button pressed');
+
+                  try {
+                    final player = AudioPlayer();
+                    await player.setUrl("http://10.0.2.2:3000/audio");
+                    await player.play();
+                  } catch (e) {
+                    printForDebugging('Error playing audio: $e');
+                  }
+                },
+                child: const Text('Play sound'),
+              ),
             ],
           ),
         ),
