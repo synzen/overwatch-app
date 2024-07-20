@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:overwatchapp/data/commute_route.repository.dart';
+import 'package:provider/provider.dart';
 
 class RouteStop extends StatelessWidget {
   final String stopId;
@@ -7,11 +9,19 @@ class RouteStop extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      title: Text(stopName),
-      onTap: () {
-        Navigator.of(context).pop();
-      },
-    );
+    return Consumer<CommuteRouteRepository>(
+        builder: (context, commuteRepository, child) => Column(children: [
+              ListTile(
+                  title: Text(stopName),
+                  onTap: () {
+                    commuteRepository
+                        .insert(CommuteRoute(name: stopName, stopIds: [stopId]))
+                        .then((route) {
+                      Navigator.of(context)
+                        ..pop()
+                        ..pop();
+                    });
+                  })
+            ]));
   }
 }

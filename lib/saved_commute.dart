@@ -6,16 +6,16 @@ import 'package:overwatchapp/stop_monitoring.dart';
 import 'package:overwatchapp/types/get_transit_stop_arrival_time.types.dart';
 import 'package:http/http.dart' as http;
 
-class SavedRouteStop extends StatefulWidget {
+class SavedCommute extends StatefulWidget {
   final String stopId;
   final String name;
-  const SavedRouteStop({super.key, required this.stopId, required this.name});
+  const SavedCommute({super.key, required this.stopId, required this.name});
 
   @override
-  State<SavedRouteStop> createState() => _SavedRouteStopState();
+  State<SavedCommute> createState() => _SavedCommuteState();
 }
 
-class _SavedRouteStopState extends State<SavedRouteStop> {
+class _SavedCommuteState extends State<SavedCommute> {
   Future<GetTransitStopArrivalTime> fetchStops() async {
     try {
       final response = await http.get(Uri.parse(
