@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:overwatchapp/routes_list.dart';
 
 void main() => runApp(const MyApp());
 
@@ -8,17 +8,17 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const String appTitle = 'Flutter layout demo';
+    const String appTitle = 'Overwatch';
     return MaterialApp(
       title: appTitle,
       home: Scaffold(
         appBar: AppBar(
           title: const Text(appTitle),
         ),
+        floatingActionButton: const AddStopButton(),
         body: const SingleChildScrollView(
           child: Column(
             children: [
-              MyStuff(),
               TitleSection(
                 name: 'Name',
                 location: 'Location',
@@ -32,35 +32,19 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class TransitRoute {
-  
-}
-
-class MyStuff extends StatefulWidget {
-  const MyStuff({super.key});
-
-  @override
-  State<MyStuff> createState() => _MyStuffState();
-}
-
-class _MyStuffState extends State<MyStuff> {
-
-  Future<http.Response> fetchAlbum() async {
-    final response = await http.get(Uri.parse('http://localhost:3000/transit-routes?search=b2'));
-
-    if (response.statusCode == 200) {
-      return response;
-    } else {
-      throw Exception('Failed to load transit routes');
-    }
-  }
+class AddStopButton extends StatelessWidget {
+  const AddStopButton({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
-      children: [
-        Text('Hello'),
-      ]
+    return FloatingActionButton(
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const RoutesList()),
+        );
+      },
+      child: const Icon(Icons.add),
     );
   }
 }
