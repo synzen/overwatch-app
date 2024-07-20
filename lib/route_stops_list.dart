@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:overwatchapp/route_stop.dart';
 import 'package:overwatchapp/types/get_transit_stop_for_route.types.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class RouteStopsList extends StatefulWidget {
   final String routeId;
@@ -98,21 +98,5 @@ class _RouteStopsListState extends State<RouteStopsList> {
             },
           ),
         ));
-  }
-}
-
-class RouteStop extends StatelessWidget {
-  final String stopId;
-  final String stopName;
-  const RouteStop({super.key, required this.stopId, required this.stopName});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      title: Text(stopName),
-      onTap: () {
-        Navigator.of(context).pop();
-      },
-    );
   }
 }

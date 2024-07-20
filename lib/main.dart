@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:overwatchapp/routes_list.dart';
+import 'package:overwatchapp/saved_route_stop.dart';
 
 void main() => runApp(const MyApp());
 
@@ -19,6 +20,7 @@ class MyApp extends StatelessWidget {
         body: const SingleChildScrollView(
           child: Column(
             children: [
+              SavedRoutesList(),
               TitleSection(
                 name: 'Name',
                 location: 'Location',
@@ -28,6 +30,22 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class SavedRoutesList extends StatelessWidget {
+  const SavedRoutesList({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Column(
+      children: [
+        SavedRouteStop(
+          name: "Stop 1",
+          stopId: "MTA_301986",
+        ),
+      ],
     );
   }
 }
