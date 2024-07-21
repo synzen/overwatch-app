@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:overwatchapp/route_stops_list.dart';
 import 'package:overwatchapp/types/get_transit_routes.types.dart';
 import 'package:http/http.dart' as http;
+import 'package:overwatchapp/utils/print_debug.dart';
 
 class RoutesList extends StatefulWidget {
   const RoutesList({super.key});
@@ -15,11 +16,17 @@ class RoutesList extends StatefulWidget {
 class _RoutesListState extends State<RoutesList> {
   Future<GetTransitRoutesResponse>? transitRoutes;
   late TextEditingController _searchController;
+  bool _validate = false;
 
   Future<GetTransitRoutesResponse> fetchTransitRoutes(String search) async {
     if (search.isEmpty) {
       throw Exception('Search query cannot be empty');
     }
+
+    setState(() {
+      _validate = false;
+      transitRoutes = null;
+    });
 
     try {
       final response = await http.get(Uri.parse(
@@ -64,6 +71,20 @@ class _RoutesListState extends State<RoutesList> {
     super.dispose();
   }
 
+  void onSubmitSearch() {
+    if (_searchController.text.isEmpty) {
+      setState(() {
+        _validate = true;
+      });
+
+      return;
+    }
+
+    setState(() {
+      transitRoutes = fetchTransitRoutes(_searchController.text);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -79,30 +100,22 @@ class _RoutesListState extends State<RoutesList> {
                 child: TextField(
               autofocus: true,
               controller: _searchController,
-              decoration: const InputDecoration(
+              onChanged: (value) => setState(() {
+                _validate = false;
+              }),
+              decoration: InputDecoration(
                 hintText: 'Bus name',
-                prefixIcon: Icon(Icons.search),
+                prefixIcon: const Icon(Icons.search),
+                errorText: _validate ? 'Please enter a bus name' : null,
               ),
               onSubmitted: (value) {
-                if (value.isEmpty) {
-                  return;
-                }
-
-                setState(() {
-                  transitRoutes = fetchTransitRoutes(value);
-                });
+                onSubmitSearch();
               },
             )),
             const SizedBox(width: 8),
             FilledButton.tonal(
               onPressed: () {
-                if (_searchController.text.isEmpty) {
-                  return;
-                }
-
-                setState(() {
-                  transitRoutes = fetchTransitRoutes(_searchController.text);
-                });
+                onSubmitSearch();
               },
               child: const Text('Search'),
             ),
@@ -112,8 +125,8 @@ class _RoutesListState extends State<RoutesList> {
               child: FutureBuilder<GetTransitRoutesResponse>(
                 future: transitRoutes,
                 builder: (_, snapshot) {
-                  if (_searchController.text == '') {
-                    return const Text('Enter a bus name to search');
+                  if (transitRoutes == null) {
+                    return const SizedBox();
                   }
 
                   if (snapshot.hasData) {
@@ -121,7 +134,6 @@ class _RoutesListState extends State<RoutesList> {
                       children: snapshot.data?.data.routes
                               .map((route) => ListTile(
                                   title: Text(route.name),
-                                  subtitle: Text(route.id),
                                   onTap: () {
                                     Navigator.push(
                                       context,

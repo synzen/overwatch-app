@@ -1,4 +1,6 @@
-class GetTransitRoutesResponse {
+import 'package:overwatchapp/utils/data_query.dart';
+
+class GetTransitRoutesResponse extends JsonData {
   Data data;
 
   GetTransitRoutesResponse({required this.data});
