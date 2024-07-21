@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:overwatchapp/data/commute_route.repository.dart';
@@ -7,9 +8,22 @@ import 'package:overwatchapp/utils/print_debug.dart';
 import 'package:path/path.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  await FirebaseMessaging.instance.requestPermission();
+
+  FirebaseMessaging.instance.getToken().then((value) {
+    printForDebugging('Firebase token: $value');
+  });
+
   printForDebugging('Initializing database');
   final dbPath = join(await getDatabasesPath(), 'overwatch_db.db');
   await deleteDatabase(dbPath);

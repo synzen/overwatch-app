@@ -1,4 +1,4 @@
-package com.example.overwatchapp
+package com.synzen.overwatch
 
 import io.flutter.embedding.android.FlutterActivity
 

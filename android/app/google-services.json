@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "620131373785",
+    "project_id": "overwatch-b52ab",
+    "storage_bucket": "overwatch-b52ab.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:620131373785:android:d86d4db83d90b0f3d824c8",
+        "android_client_info": {
+          "package_name": "com.synzen.overwatch"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCJ5y6wwOQJdhFtjTmgsjM-OXgZhbJE4Eg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
