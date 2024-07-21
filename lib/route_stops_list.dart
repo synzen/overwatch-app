@@ -22,7 +22,7 @@ class _RouteStopsListState extends State<RouteStopsList> {
   Future<GetTransitStopsForRoute> fetchStops() async {
     try {
       final response = await http.get(Uri.parse(
-          'http://10.0.2.2:3000/transit-stops-for-route?route_id=${widget.routeId}'));
+          'http://10.0.2.2:3000/transit-stops-for-route?route_id=${Uri.encodeComponent(widget.routeId)}'));
 
       if (response.statusCode == 200) {
         return GetTransitStopsForRoute.fromJson(
