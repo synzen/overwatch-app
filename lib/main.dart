@@ -1,28 +1,25 @@
-import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:overwatchapp/data/commute_route.repository.dart';
 import 'package:overwatchapp/routes_list.dart';
 import 'package:overwatchapp/saved_commute.dart';
+import 'package:overwatchapp/utils/native_messages.dart';
 import 'package:overwatchapp/utils/print_debug.dart';
 import 'package:path/path.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:firebase_core/firebase_core.dart';
+
 import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await initializeNativeMessaging();
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-
-  await FirebaseMessaging.instance.requestPermission();
-
-  FirebaseMessaging.instance.getToken().then((value) {
-    printForDebugging('Firebase token: $value');
-  });
 
   printForDebugging('Initializing database');
   final dbPath = join(await getDatabasesPath(), 'overwatch_db.db');
@@ -104,12 +101,25 @@ class SavedRoutesList extends StatefulWidget {
 }
 
 class _SavedRoutesListState extends State<SavedRoutesList> {
+  Future<void> _sendNotification() async {
+    try {
+      await sendNotification(const CreateNativeNotification(
+          description: "some description", title: 'My Title'));
+    } on PlatformException catch (e) {
+      printForDebugging('Error sending notification: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<CommuteRouteRepository>(
-        child: const Column(
+        child: Column(
           children: [
-            Text('Commutes', textScaler: TextScaler.linear(1.5)),
+            ElevatedButton(
+              onPressed: _sendNotification,
+              child: const Text('Create notification'),
+            ),
+            const Text('Commutes', textScaler: TextScaler.linear(1.5)),
           ],
         ),
         builder: (context, commuteRepository, child) => Column(
