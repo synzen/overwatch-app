@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:overwatchapp/types/get_transit_stop_arrival_time.types.dart';
 import 'package:http/http.dart' as http;
 import 'package:overwatchapp/utils/print_debug.dart';
@@ -20,7 +21,8 @@ class _StopMonitoringState extends State<StopMonitoring> {
   String minutesUntilArrival = '';
   int currentTimerDuration = 60;
   int refreshCount = 0;
-  late Timer timer;
+  FlutterTts tts = FlutterTts();
+  late Timer? timer = null;
 
   Future<GetTransitStopArrivalTime> fetchArrivalTime() async {
     try {
@@ -44,38 +46,38 @@ class _StopMonitoringState extends State<StopMonitoring> {
 
   Future<void> _refreshData() async {
     GetTransitStopArrivalTime arrivalTime = await fetchArrivalTime();
+    printForDebugging("Refreshing data...");
+
+    minutesUntilArrival =
+        arrivalTime.data.arrival?.minutesUntilArrival.toString() ?? 'N/A';
+    lastRefreshTime = DateTime.now().toIso8601String();
+    refreshCount++;
+
+    var arrival = arrivalTime.data.arrival;
+
+    if (arrival == null) {
+      return;
+    }
+
+    var newTimerDuration = const Duration(minutes: 3);
+
+    if (arrival.minutesUntilArrival < 3) {
+      newTimerDuration = const Duration(seconds: 30);
+    } else if (arrival.minutesUntilArrival < 5) {
+      newTimerDuration = const Duration(minutes: 1);
+    } else if (arrival.minutesUntilArrival < 7) {
+      newTimerDuration = const Duration(minutes: 2);
+    }
+
+    tts.speak("Arrival in ${arrival.minutesUntilArrival} minutes");
+
+    printForDebugging("setting to ${newTimerDuration.inSeconds}");
+
     setState(() {
-      printForDebugging("Refreshing data...");
-
-      minutesUntilArrival =
-          arrivalTime.data.arrival?.minutesUntilArrival.toString() ?? 'N/A';
-      lastRefreshTime = DateTime.now().toIso8601String();
-      refreshCount++;
-
-      var arrival = arrivalTime.data.arrival;
-
-      if (arrival == null) {
-        return;
-      }
-
-      var newTimerDuration = const Duration(minutes: 3);
-
-      if (arrival.minutesUntilArrival < 7) {
-        newTimerDuration = const Duration(minutes: 2);
-      } else if (arrival.minutesUntilArrival < 5) {
-        newTimerDuration = const Duration(minutes: 1);
-      } else if (arrival.minutesUntilArrival < 3) {
-        newTimerDuration = const Duration(seconds: 30);
-      }
-
-      if (newTimerDuration.inSeconds != currentTimerDuration) {
-        printForDebugging("Cancelling timer and setting to $newTimerDuration");
-        timer.cancel();
-        timer = Timer(newTimerDuration, () {
-          _refreshData();
-        });
-        currentTimerDuration = newTimerDuration.inSeconds;
-      }
+      timer = Timer(newTimerDuration, () {
+        _refreshData();
+      });
+      currentTimerDuration = newTimerDuration.inSeconds;
     });
   }
 
@@ -83,15 +85,13 @@ class _StopMonitoringState extends State<StopMonitoring> {
   void initState() {
     super.initState();
     _refreshData();
-    timer = Timer(const Duration(seconds: 60), () {
-      _refreshData();
-    });
   }
 
   @override
   void dispose() {
     super.dispose();
-    timer.cancel();
+
+    timer?.cancel();
   }
 
   @override

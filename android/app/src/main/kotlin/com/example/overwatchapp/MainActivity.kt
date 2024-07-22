@@ -80,7 +80,8 @@ class MainActivity: FlutterActivity() {
             val importance = NotificationManager.IMPORTANCE_HIGH
             val channel = NotificationChannel(CHANNEL_ID, "Alerts", importance).apply {
                 description = "Alerting for transit arrivals"
-            }.enableVibration(true)
+            }
+            channel.enableVibration(true)
             // Register the channel with the system.
             val notificationManager: NotificationManager =
                 getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
