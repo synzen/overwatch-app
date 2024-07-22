@@ -29,7 +29,7 @@ void main() async {
       """
       CREATE TABLE commute_routes(
           id integer primary key,
-          name    text
+          name    text unique
       );
       """,
     );

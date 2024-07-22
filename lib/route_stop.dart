@@ -43,6 +43,27 @@ class _RouteStopState extends State<RouteStop> {
         ..pop()
         ..pop()
         ..pop();
+    }).catchError((err) {
+      if (err is DuplicateCommuteRouteException) {
+        showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+                  title: const Text('Duplicate commute name'),
+                  content: const Text(
+                      'This name is already in use. Please choose another.'),
+                  actions: [
+                    TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text('OK'))
+                  ],
+                ));
+
+        return;
+      }
+
+      throw err;
     });
   }
 

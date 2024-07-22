@@ -14,14 +14,19 @@ class CommuteRoute {
   }
 }
 
+class DuplicateCommuteRouteException implements Exception {
+  final String message = 'This name is already in use. Please choose another.';
+}
+
 class CommuteRouteRepository extends ChangeNotifier {
   Future<Database> database;
 
   CommuteRouteRepository(this.database);
 
   Future<void> insert(CommuteRoute route) async {
+    Database? db;
     try {
-      final db = await database;
+      db = await database;
 
       await db.execute("BEGIN TRANSACTION");
       await db.execute(
@@ -34,8 +39,17 @@ class CommuteRouteRepository extends ChangeNotifier {
       await db.execute("COMMIT TRANSACTION");
 
       notifyListeners();
+    } on DatabaseException catch (e) {
+      await db?.execute("ROLLBACK TRANSACTION");
+      if (e.isUniqueConstraintError()) {
+        throw DuplicateCommuteRouteException();
+      }
+
+      rethrow;
     } catch (e) {
+      await db?.execute("ROLLBACK TRANSACTION");
       printForDebugging("Error inserting commute route: $e");
+
       rethrow;
     }
   }

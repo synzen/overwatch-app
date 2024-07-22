@@ -69,7 +69,17 @@ class _StopMonitoringState extends State<StopMonitoring> {
       newTimerDuration = const Duration(minutes: 2);
     }
 
-    tts.speak("Arrival in ${arrival.minutesUntilArrival} minutes");
+    if (arrival.minutesUntilArrival == 0) {
+      tts.speak("Arriving now").catchError((err) {
+        printForDebugging("Error speaking: $err");
+      });
+    } else {
+      tts
+          .speak("Arrival in ${arrival.minutesUntilArrival} minutes")
+          .catchError((err) {
+        printForDebugging("Error speaking: $err");
+      });
+    }
 
     printForDebugging("setting to ${newTimerDuration.inSeconds}");
 
