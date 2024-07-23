@@ -1,10 +1,8 @@
-import 'dart:convert';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:overwatchapp/data/transit_api.dart';
 import 'package:overwatchapp/route_stop.dart';
 import 'package:overwatchapp/types/get_transit_stop_for_route.types.dart';
+import 'package:overwatchapp/utils/app_container.dart';
 
 class RouteStopsList extends StatefulWidget {
   final String routeId;
@@ -20,27 +18,7 @@ class _RouteStopsListState extends State<RouteStopsList> {
   late Future<GetTransitStopsForRoute> stops;
 
   Future<GetTransitStopsForRoute> fetchStops() async {
-    try {
-      final response = await http.get(Uri.parse(
-          'http://10.0.2.2:3000/transit-stops-for-route?route_id=${Uri.encodeComponent(widget.routeId)}'));
-
-      if (response.statusCode == 200) {
-        return GetTransitStopsForRoute.fromJson(
-            jsonDecode(response.body) as Map<String, dynamic>);
-      } else {
-        if (kDebugMode) {
-          debugPrint(
-              "Non-200 status code returned from server: ${response.statusCode}");
-        }
-        throw Exception('Failed to load transit routes');
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint("Error fetching transit routes: $e");
-      }
-
-      rethrow;
-    }
+    return appContainer.get<TransitApi>().fetchStops(widget.routeId);
   }
 
   @override

@@ -3,15 +3,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:overwatchapp/data/commute_route.repository.dart';
+import 'package:overwatchapp/data/transit_api.dart';
 import 'package:overwatchapp/routes_list.dart';
 import 'package:overwatchapp/saved_commute.dart';
+import 'package:overwatchapp/utils/app_container.dart';
 import 'package:overwatchapp/utils/native_messages.dart';
 import 'package:overwatchapp/utils/print_debug.dart';
 import 'package:path/path.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
-
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'firebase_options.dart';
+
+const prod = bool.fromEnvironment('dart.vm.product');
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -47,9 +51,22 @@ void main() async {
   }, version: 1);
 
   printForDebugging('Running app');
+
+  await dotenv.load(fileName: prod ? '.env.prod' : '.env');
+
+  var apiUrl = dotenv.env['API_URL'];
+  var apiKey = dotenv.env['API_KEY'];
+
+  if (apiUrl == null || apiKey == null) {
+    throw Exception('API_URL and API_KEY must be set in .env file');
+  }
+
+  appContainer
+      .register<TransitApi>(TransitApi(baseUrl: apiUrl, apiKey: apiKey));
+
   runApp(MultiProvider(providers: [
     ChangeNotifierProvider(
-        create: (context) => CommuteRouteRepository(database))
+        create: (context) => CommuteRouteRepository(database)),
   ], child: const MyApp()));
 }
 

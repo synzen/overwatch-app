@@ -3,8 +3,10 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:overwatchapp/data/transit_api.dart';
 import 'package:overwatchapp/types/get_transit_stop_arrival_time.types.dart';
 import 'package:http/http.dart' as http;
+import 'package:overwatchapp/utils/app_container.dart';
 import 'package:overwatchapp/utils/print_debug.dart';
 
 class StopMonitoring extends StatefulWidget {
@@ -25,23 +27,7 @@ class _StopMonitoringState extends State<StopMonitoring> {
   late Timer? timer = null;
 
   Future<GetTransitStopArrivalTime> fetchArrivalTime() async {
-    try {
-      final response = await http.get(Uri.parse(
-          'http://10.0.2.2:3000/transit-arrival-times?stop_id=${Uri.encodeComponent(widget.stopId)}'));
-
-      if (response.statusCode == 200) {
-        return GetTransitStopArrivalTime.fromJson(
-            jsonDecode(response.body) as Map<String, dynamic>);
-      } else {
-        printForDebugging(
-            "Non-200 status code returned from server: ${response.statusCode}");
-        throw Exception('Failed to load transit routes');
-      }
-    } catch (e) {
-      printForDebugging("Error fetching transit routes: $e");
-
-      rethrow;
-    }
+    return appContainer.get<TransitApi>().fetchArrivalTime(widget.stopId);
   }
 
   Future<void> _refreshData() async {
