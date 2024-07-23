@@ -1,12 +1,10 @@
 import 'dart:async';
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:overwatchapp/data/transit_api.dart';
 import 'package:overwatchapp/types/get_transit_stop_arrival_time.types.dart';
-import 'package:http/http.dart' as http;
 import 'package:overwatchapp/utils/app_container.dart';
+import 'package:overwatchapp/utils/native_messages.dart';
 import 'package:overwatchapp/utils/print_debug.dart';
 
 class StopMonitoring extends StatefulWidget {
@@ -24,13 +22,13 @@ class _StopMonitoringState extends State<StopMonitoring> {
   int currentTimerDuration = 60;
   int refreshCount = 0;
   FlutterTts tts = FlutterTts();
-  late Timer? timer = null;
+  late Timer? timer;
 
   Future<GetTransitStopArrivalTime> fetchArrivalTime() async {
     return appContainer.get<TransitApi>().fetchArrivalTime(widget.stopId);
   }
 
-  Future<void> _refreshData() async {
+  Future<void> _refreshData(bool showNotification) async {
     GetTransitStopArrivalTime arrivalTime = await fetchArrivalTime();
     printForDebugging("Refreshing data...");
 
@@ -55,23 +53,29 @@ class _StopMonitoringState extends State<StopMonitoring> {
       newTimerDuration = const Duration(minutes: 2);
     }
 
+    String text;
+
     if (arrival.minutesUntilArrival == 0) {
-      tts.speak("Arriving now").catchError((err) {
-        printForDebugging("Error speaking: $err");
-      });
+      text = "Arriving now";
     } else {
-      tts
-          .speak("Arrival in ${arrival.minutesUntilArrival} minutes")
-          .catchError((err) {
-        printForDebugging("Error speaking: $err");
-      });
+      text =
+          "Arrival in ${arrival.minutesUntilArrival} minute${arrival.minutesUntilArrival > 1 ? 's' : ''}";
     }
+
+    tts.speak(text).catchError((err) {
+      printForDebugging("Error speaking: $err");
+    });
+
+    sendNotification(CreateNativeNotification(
+      title: widget.name,
+      description: text,
+    ));
 
     printForDebugging("setting to ${newTimerDuration.inSeconds}");
 
     setState(() {
       timer = Timer(newTimerDuration, () {
-        _refreshData();
+        _refreshData(true);
       });
       currentTimerDuration = newTimerDuration.inSeconds;
     });
@@ -80,7 +84,7 @@ class _StopMonitoringState extends State<StopMonitoring> {
   @override
   void initState() {
     super.initState();
-    _refreshData();
+    _refreshData(false);
   }
 
   @override

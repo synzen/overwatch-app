@@ -31,7 +31,7 @@ class TransitApi {
           debugPrint(
               "Non-200 status code returned from server: ${response.statusCode}");
         }
-        throw Exception('Failed to load transit routes');
+        throw Exception('Bad status code ${response.statusCode}');
       }
     } catch (e) {
       if (kDebugMode) {
@@ -57,7 +57,7 @@ class TransitApi {
           debugPrint(
               "Non-200 status code returned from server: ${response.statusCode}");
         }
-        throw Exception('Failed to load transit routes');
+        throw Exception('Bad status code: ${response.statusCode}');
       }
     } catch (e) {
       if (kDebugMode) {
@@ -81,7 +81,7 @@ class TransitApi {
       } else {
         printForDebugging(
             "Non-200 status code returned from server: ${response.statusCode}");
-        throw Exception('Failed to load transit routes');
+        throw Exception('Bad status code: ${response.statusCode}');
       }
     } catch (e) {
       printForDebugging("Error fetching transit routes: $e");
