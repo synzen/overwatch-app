@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:overwatchapp/data/commute_route.repository.dart';
+import 'package:overwatchapp/data/geo_service.dart';
 import 'package:overwatchapp/data/transit_api.dart';
-import 'package:overwatchapp/routes_list.dart';
 import 'package:overwatchapp/saved_commute.dart';
+import 'package:overwatchapp/stops_at_location_list.dart';
 import 'package:overwatchapp/utils/app_container.dart';
 import 'package:overwatchapp/utils/native_messages.dart';
 import 'package:overwatchapp/utils/print_debug.dart';
@@ -27,7 +28,7 @@ void main() async {
 
   printForDebugging('Initializing database');
   final dbPath = join(await getDatabasesPath(), 'overwatch_db.db');
-  await deleteDatabase(dbPath);
+  // await deleteDatabase(dbPath);
   final database = openDatabase(dbPath, onCreate: (db, version) async {
     await db.execute(
       """
@@ -61,8 +62,9 @@ void main() async {
     throw Exception('API_URL and API_KEY must be set in .env file');
   }
 
-  appContainer
-      .register<TransitApi>(TransitApi(baseUrl: apiUrl, apiKey: apiKey));
+  GeoService geoService = GeoService();
+  appContainer.register<TransitApi>(
+      TransitApi(baseUrl: apiUrl, apiKey: apiKey, geoService: geoService));
 
   runApp(MultiProvider(providers: [
     ChangeNotifierProvider(
@@ -180,7 +182,7 @@ class AddStopButton extends StatelessWidget {
       onPressed: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const RoutesList()),
+          MaterialPageRoute(builder: (context) => const StopsAtLocationList()),
         );
       },
       child: const Icon(Icons.add),

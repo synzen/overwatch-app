@@ -5,7 +5,14 @@ import 'package:provider/provider.dart';
 class RouteStop extends StatefulWidget {
   final String stopId;
   final String stopName;
-  const RouteStop({super.key, required this.stopId, required this.stopName});
+  final int popCount;
+  final String? stopDescription;
+  const RouteStop(
+      {super.key,
+      required this.stopId,
+      required this.stopName,
+      required this.popCount,
+      this.stopDescription});
 
   @override
   State<RouteStop> createState() => _RouteStopState();
@@ -39,10 +46,9 @@ class _RouteStopState extends State<RouteStop> {
         .insert(CommuteRoute(
             name: _commuteNameController.text, stopIds: [widget.stopId]))
         .then((route) {
-      Navigator.of(context)
-        ..pop()
-        ..pop()
-        ..pop();
+      for (int i = 0; i < widget.popCount; i++) {
+        Navigator.of(context).pop();
+      }
     }).catchError((err) {
       if (err is DuplicateCommuteRouteException) {
         showDialog(
@@ -73,6 +79,9 @@ class _RouteStopState extends State<RouteStop> {
         builder: (context, commuteRepository, child) => Column(children: [
               ListTile(
                   title: Text(widget.stopName),
+                  subtitle: widget.stopDescription != null
+                      ? Text(widget.stopDescription!)
+                      : null,
                   onTap: () {
                     showDialog(
                         context: context,

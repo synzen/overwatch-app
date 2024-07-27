@@ -62,14 +62,18 @@ class _StopMonitoringState extends State<StopMonitoring> {
           "Arrival in ${arrival.minutesUntilArrival} minute${arrival.minutesUntilArrival > 1 ? 's' : ''}";
     }
 
-    tts.speak(text).catchError((err) {
-      printForDebugging("Error speaking: $err");
-    });
-
     sendNotification(CreateNativeNotification(
       title: widget.name,
       description: text,
     ));
+
+    var headphoneStatus = await sendHeadphonesPluggedStatusCheck();
+
+    if (headphoneStatus.pluggedIn) {
+      tts.speak(text).catchError((err) {
+        printForDebugging("Error speaking: $err");
+      });
+    }
 
     printForDebugging("setting to ${newTimerDuration.inSeconds}");
 

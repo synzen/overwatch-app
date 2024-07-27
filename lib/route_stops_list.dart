@@ -66,6 +66,7 @@ class _RouteStopsListState extends State<RouteStopsList> {
                                 ...group.stops.map((stop) => RouteStop(
                                       stopId: stop.id,
                                       stopName: stop.name,
+                                      popCount: 3,
                                     )),
                                 // ),
                               ],

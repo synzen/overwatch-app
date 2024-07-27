@@ -26,9 +26,14 @@ class Data {
 class Group {
   String id;
   String name;
+  String routeName;
   List<Stop> stops;
 
-  Group({required this.id, required this.name, required this.stops});
+  Group(
+      {required this.id,
+      required this.name,
+      required this.stops,
+      required this.routeName});
 
   factory Group.fromJson(Map<String, dynamic> json) {
     var stops = <Stop>[];
@@ -36,7 +41,11 @@ class Group {
       stops.add(Stop.fromJson(v));
     });
 
-    return Group(id: json['id'], name: json['name'], stops: stops);
+    return Group(
+        id: json['id'],
+        name: json['name'],
+        stops: stops,
+        routeName: json['route_name']);
   }
 }
 
