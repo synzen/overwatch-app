@@ -76,9 +76,10 @@ class MainActivity: FlutterActivity() {
                 result.success(1);
             } else if (call.method == "checkHeadphones") {
                 try {
-                    result.success("""
-    {"pluggedIn": ${areHeadphonesPluggedIn()}}
-""".trimIndent())
+                    val map = hashMapOf<String, Any>()
+                    map["pluggedIn"] = areHeadphonesPluggedIn();
+
+                    result.success(map);
                 } catch (err: Error) {
                     result.error("", "Failed to check headphones state: ${err.message}", null);
                 }
@@ -164,13 +165,6 @@ class MainActivity: FlutterActivity() {
 
             return false
         }
-
-//        if (ActivityCompat.checkSelfPermission(
-//                this@MainActivity,
-//                Manifest.permission.BLUETOOTH_CONNECT
-//            ) != PackageManager.PERMISSION_GRANTED) {
-//            return false
-//        }
 
         val bluetoothAdapter = (getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).adapter;
         return bluetoothAdapter.isEnabled && bluetoothAdapter.getProfileConnectionState(BluetoothHeadset.HEADSET) == BluetoothAdapter.STATE_CONNECTED

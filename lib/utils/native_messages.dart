@@ -27,21 +27,21 @@ class HeadphoneStatusCheck {
   final bool pluggedIn;
   const HeadphoneStatusCheck({required this.pluggedIn});
 
-  factory HeadphoneStatusCheck.fromJsonString(String jsonString) {
-    var json = jsonDecode(jsonString);
-    return HeadphoneStatusCheck(pluggedIn: json["pluggedIn"]);
+  factory HeadphoneStatusCheck.fromJson(Map<String, dynamic> json) {
+    return HeadphoneStatusCheck(pluggedIn: json['pluggedIn'] as bool);
   }
 }
 
 Future<HeadphoneStatusCheck> sendHeadphonesPluggedStatusCheck() async {
   try {
-    var res = await nativePlatform.invokeMethod<String>('checkHeadphones');
+    var res = await nativePlatform
+        .invokeMethod<Map<String, dynamic>>('checkHeadphones');
 
     if (res == null) {
       throw Exception('Missing response from native platform');
     }
 
-    return HeadphoneStatusCheck.fromJsonString(res);
+    return HeadphoneStatusCheck.fromJson(res);
   } catch (e) {
     printForDebugging('Error checking headphones state: $e');
     return const HeadphoneStatusCheck(pluggedIn: false);
