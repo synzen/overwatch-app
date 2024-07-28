@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:overwatchapp/data/commute_route.repository.dart';
 import 'package:overwatchapp/data/geo_service.dart';
 import 'package:overwatchapp/data/transit_api.dart';
+import 'package:overwatchapp/routes_list.dart';
 import 'package:overwatchapp/saved_commute.dart';
 import 'package:overwatchapp/stops_at_location_list.dart';
 import 'package:overwatchapp/utils/app_container.dart';
 import 'package:overwatchapp/utils/native_messages.dart';
 import 'package:overwatchapp/utils/print_debug.dart';
+import 'package:overwatchapp/utils/theme.dart';
 import 'package:path/path.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
@@ -56,6 +59,8 @@ void main() async {
     throw Exception('API_URL and API_KEY must be set in .env file');
   }
 
+  FlutterForegroundTask.initCommunicationPort();
+
   GeoService geoService = GeoService();
   appContainer.register<TransitApi>(
       TransitApi(baseUrl: apiUrl, apiKey: apiKey, geoService: geoService));
@@ -72,8 +77,15 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const String appTitle = 'Overwatch';
+    final brightness = View.of(context).platformDispatcher.platformBrightness;
+
+    TextTheme textTheme = createTextTheme(context, "Ubuntu", "Ubuntu");
+
+    MaterialTheme theme = MaterialTheme(textTheme);
+
     return MaterialApp(
       title: appTitle,
+      theme: brightness == Brightness.light ? theme.light() : theme.dark(),
       home: Scaffold(
         appBar: AppBar(
           title: const Text(appTitle),
@@ -176,7 +188,26 @@ class AddStopButton extends StatelessWidget {
       onPressed: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const StopsAtLocationList()),
+          MaterialPageRoute(
+              builder: (context) => DefaultTabController(
+                  length: 2,
+                  child: Scaffold(
+                    appBar: AppBar(
+                      title: const Text('Add Commute'),
+                      bottom: const TabBar(
+                        tabs: [
+                          Tab(text: 'Nearby'),
+                          Tab(text: 'Search'),
+                        ],
+                      ),
+                    ),
+                    body: const TabBarView(
+                      children: [
+                        StopsAtLocationList(),
+                        RoutesList(),
+                      ],
+                    ),
+                  ))),
         );
       },
       child: const Icon(Icons.add),

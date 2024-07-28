@@ -50,7 +50,9 @@ class _RouteStopsListState extends State<RouteStopsList> {
               }
 
               if (!snapshot.hasData) {
-                return const CircularProgressIndicator();
+                return Container(
+                    padding: const EdgeInsets.all(32),
+                    child: const Center(child: CircularProgressIndicator()));
               }
 
               return Column(

@@ -59,76 +59,71 @@ class _RoutesListState extends State<RoutesList> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Transit Routes'),
-      ),
-      body: Container(
-        margin: const EdgeInsets.all(16.0),
-        alignment: Alignment.center,
-        child: Column(children: [
-          Row(children: [
-            Flexible(
-                child: TextField(
-              autofocus: true,
-              controller: _searchController,
-              onChanged: (value) => setState(() {
-                _validate = false;
-              }),
-              decoration: InputDecoration(
-                hintText: 'Bus name',
-                prefixIcon: const Icon(Icons.search),
-                errorText: _validate ? 'Please enter a bus name' : null,
-              ),
-              onSubmitted: (value) {
-                onSubmitSearch();
-              },
-            )),
-            const SizedBox(width: 8),
-            FilledButton.tonal(
-              onPressed: () {
-                onSubmitSearch();
-              },
-              child: const Text('Search'),
+    return Container(
+      margin: const EdgeInsets.all(16.0),
+      alignment: Alignment.center,
+      child: Column(children: [
+        Row(children: [
+          Flexible(
+              child: TextField(
+            autofocus: true,
+            controller: _searchController,
+            onChanged: (value) => setState(() {
+              _validate = false;
+            }),
+            decoration: InputDecoration(
+              hintText: 'Bus name',
+              prefixIcon: const Icon(Icons.search),
+              errorText: _validate ? 'Please enter a bus name' : null,
             ),
-          ]),
-          SingleChildScrollView(
-              padding: const EdgeInsets.only(top: 16),
-              child: FutureBuilder<GetTransitRoutesResponse>(
-                future: transitRoutes,
-                builder: (_, snapshot) {
-                  if (transitRoutes == null) {
-                    return const SizedBox();
-                  }
-
-                  if (snapshot.hasData) {
-                    return Column(
-                      children: snapshot.data?.data.routes
-                              .map((route) => ListTile(
-                                  title: Text(route.name),
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => RouteStopsList(
-                                          routeId: route.id,
-                                          routeName: route.name,
-                                        ),
-                                      ),
-                                    );
-                                  }))
-                              .toList() ??
-                          [],
-                    );
-                  } else if (snapshot.hasError) {
-                    return const Text('Failed to load transit routes');
-                  }
-
-                  return const CircularProgressIndicator();
-                },
-              ))
+            onSubmitted: (value) {
+              onSubmitSearch();
+            },
+          )),
+          const SizedBox(width: 8),
+          FilledButton.tonal(
+            onPressed: () {
+              onSubmitSearch();
+            },
+            child: const Text('Search'),
+          ),
         ]),
-      ),
+        SingleChildScrollView(
+            padding: const EdgeInsets.only(top: 16),
+            child: FutureBuilder<GetTransitRoutesResponse>(
+              future: transitRoutes,
+              builder: (_, snapshot) {
+                if (transitRoutes == null) {
+                  return const SizedBox();
+                }
+
+                if (snapshot.hasData) {
+                  return Column(
+                    children: snapshot.data?.data.routes
+                            .map((route) => ListTile(
+                                title: Text(route.name),
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => RouteStopsList(
+                                        routeId: route.id,
+                                        routeName: route.name,
+                                      ),
+                                    ),
+                                  );
+                                }))
+                            .toList() ??
+                        [],
+                  );
+                } else if (snapshot.hasError) {
+                  return const Text('Failed to load transit routes');
+                }
+
+                return const CircularProgressIndicator();
+              },
+            ))
+      ]),
     );
   }
 }

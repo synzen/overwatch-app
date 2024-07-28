@@ -12,6 +12,7 @@ class TransitApi {
   final String baseUrl;
   final String apiKey;
   final GeoService geoService;
+  GetTransitStopsAtLocation? _cachedStopsAtLocation;
 
   TransitApi(
       {required this.baseUrl, required this.apiKey, required this.geoService});
@@ -46,8 +47,14 @@ class TransitApi {
     }
   }
 
-  Future<GetTransitStopsAtLocation> fetchTransitStopsAtLocation() async {
-    var position = await geoService.determinePosition();
+  Future<GetTransitStopsAtLocation> fetchTransitStopsAtLocation(
+      {promptForLocationPermission = false}) async {
+    if (_cachedStopsAtLocation != null && !promptForLocationPermission) {
+      return _cachedStopsAtLocation!;
+    }
+
+    var position = await geoService.determinePosition(
+        forcePermission: promptForLocationPermission);
     printForDebugging('Position: ${position.lat}, ${position.long}');
     try {
       final response = await http.get(
@@ -56,8 +63,18 @@ class TransitApi {
           headers: {'Temp-Authorization': apiKey});
 
       if (response.statusCode == 200) {
-        return GetTransitStopsAtLocation.fromJson(
-            jsonDecode(response.body) as Map<String, dynamic>);
+        var val = GetTransitStopsAtLocation.fromJson(
+            jsonDecode(response.body) as Map<String, dynamic>,
+            isHighAccuracy: position.isHighAccuracy);
+
+        _cachedStopsAtLocation = val;
+
+        // expire in 5 min
+        Future.delayed(const Duration(minutes: 5), () {
+          _cachedStopsAtLocation = null;
+        });
+
+        return val;
       } else {
         if (kDebugMode) {
           debugPrint(

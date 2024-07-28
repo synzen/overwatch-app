@@ -1,10 +1,13 @@
 class GetTransitStopsAtLocation {
   Data data;
+  bool isHighAccuracy;
 
-  GetTransitStopsAtLocation({required this.data});
+  GetTransitStopsAtLocation({required this.data, required this.isHighAccuracy});
 
-  factory GetTransitStopsAtLocation.fromJson(Map<String, dynamic> json) {
-    return GetTransitStopsAtLocation(data: Data.fromJson(json['data']));
+  factory GetTransitStopsAtLocation.fromJson(Map<String, dynamic> json,
+      {required bool isHighAccuracy}) {
+    return GetTransitStopsAtLocation(
+        data: Data.fromJson(json['data']), isHighAccuracy: isHighAccuracy);
   }
 }
 
