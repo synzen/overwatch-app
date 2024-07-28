@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
+import 'package:overwatchapp/data/geo_service.dart';
 import 'package:overwatchapp/utils/print_debug.dart';
 
 const MethodChannel nativePlatform = MethodChannel("com.synzen.overwatch");
@@ -45,5 +46,22 @@ Future<HeadphoneStatusCheck> sendHeadphonesPluggedStatusCheck() async {
   } catch (e) {
     printForDebugging('Error checking headphones state: $e');
     return const HeadphoneStatusCheck(pluggedIn: false);
+  }
+}
+
+Future<GeoServicePosition> getPosition() async {
+  try {
+    var res =
+        await nativePlatform.invokeMethod<Map<String, dynamic>>('getPosition');
+
+    if (res == null) {
+      throw Exception('Missing response from native platform');
+    }
+
+    return GeoServicePosition.fromJson(res);
+  } catch (e) {
+    printForDebugging('Error checking headphones state: $e');
+
+    rethrow;
   }
 }

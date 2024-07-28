@@ -3,6 +3,10 @@ class GeoServicePosition {
   final String long;
 
   GeoServicePosition({required this.lat, required this.long});
+
+  factory GeoServicePosition.fromJson(Map<String, dynamic> json) {
+    return GeoServicePosition(lat: json['lat'], long: json['long']);
+  }
 }
 
 class GeoService {

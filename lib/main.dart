@@ -1,4 +1,3 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
@@ -14,17 +13,12 @@ import 'package:path/path.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'firebase_options.dart';
 
 const prod = bool.fromEnvironment('dart.vm.product');
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeNativeMessaging();
-
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
 
   printForDebugging('Initializing database');
   final dbPath = join(await getDatabasesPath(), 'overwatch_db.db');

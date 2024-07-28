@@ -1,6 +1,7 @@
 package com.synzen.overwatch
 
 import android.Manifest
+import android.app.Activity
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -21,55 +22,84 @@ import android.os.BatteryManager
 import android.os.Build
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
+import androidx.activity.result.ActivityResultCallback
+import androidx.activity.result.contract.ActivityResultContract
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
+import androidx.core.app.ComponentActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import com.example.overwatchapp.LocationPermission
+import io.flutter.embedding.android.FlutterFragmentActivity
 import org.json.JSONObject
 
-class MainActivity: FlutterActivity() {
+class MainActivity: FlutterFragmentActivity() {
     private val CHANNEL = "com.synzen.overwatch"
     private val CHANNEL_ID = "transit-arrivals"
+
+    fun <I, O> Activity.registerForActivityResult(
+        contract: ActivityResultContract<I, O>,
+        callback: ActivityResultCallback<O>
+    ) = (this as androidx.activity.ComponentActivity).registerForActivityResult(contract, callback)
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler {
             call, result ->
-
             if (call.method == "sendNotification") {
-                val title = call.argument<String>("title")
-                val description = call.argument<String>("description")
+//                val title = call.argument<String>("title")
+//                val description = call.argument<String>("description")
+//
+//                if (title.isNullOrBlank() || description.isNullOrBlank()) {
+//                    result.error("", "Missing title or description", null)
+//
+//                    return@setMethodCallHandler
+//                }
+//
+//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && ActivityCompat.checkSelfPermission(this@MainActivity, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+//                    ActivityCompat.requestPermissions(this,  arrayOf(Manifest.permission.POST_NOTIFICATIONS), 0)
+//                    result.error("", "Missing permissions", null)
+//
+//                    return@setMethodCallHandler
+//                }
+//
+//                val intent = PendingIntent.getActivity(this, 0, Intent().apply {
+//                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+//                }, PendingIntent.FLAG_IMMUTABLE)
+//                val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+//                    .setSmallIcon(R.drawable.launch_background)
+//                    .setContentTitle(title)
+//                    .setContentText(description)
+//                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+//                    .setContentIntent(intent)
+//                    .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+//                    .setAutoCancel(false)
+//
+//
+//                NotificationManagerCompat.from(this).notify(123, notification.build())
 
-                if (title.isNullOrBlank() || description.isNullOrBlank()) {
-                    result.error("", "Missing title or description", null)
 
-                    return@setMethodCallHandler
-                }
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && ActivityCompat.checkSelfPermission(this@MainActivity, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(this,  arrayOf(Manifest.permission.POST_NOTIFICATIONS), 0)
-                    result.error("", "Missing permissions", null)
-
-                    return@setMethodCallHandler
-                }
-
-                val intent = PendingIntent.getActivity(this, 0, Intent().apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                }, PendingIntent.FLAG_IMMUTABLE)
-                val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-                    .setSmallIcon(R.drawable.common_full_open_on_phone)
-                    .setContentTitle(title)
-                    .setContentText(description)
-                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                    .setContentIntent(intent)
-                    .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                    .setAutoCancel(false)
-
-
-                NotificationManagerCompat.from(this).notify(123, notification.build())
-
+//                val request = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+//                        permissions ->
+//                    val accessFineLocation = permissions[Manifest.permission.ACCESS_FINE_LOCATION]
+//                    val accessCoarseLocation = permissions[Manifest.permission.ACCESS_COARSE_LOCATION]
+//
+//                    if (accessFineLocation == true) {
+//                        println("Fine location granted")
+//                    } else if (accessCoarseLocation == true) {
+//                        println("Coarse location granted")
+//                    } else {
+//                        println("No perm granted")
+//                    }
+//                }
+//
+//                request.launch(arrayOf(
+//                    Manifest.permission.ACCESS_FINE_LOCATION
+//                ))
             } else if (call.method == "initialize") {
                 try {
                     this.createNotificationChannel()
+//                    startActivityForResult()
                 } catch (err: Error) {
                     result.error("", "Failed to create notification channel: ${err.message}", null)
                 }
