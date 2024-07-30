@@ -7,6 +7,7 @@ import 'package:overwatchapp/data/geo_service.dart';
 import 'package:overwatchapp/data/transit_api.dart';
 import 'package:overwatchapp/routes_list.dart';
 import 'package:overwatchapp/saved_commute.dart';
+import 'package:overwatchapp/services/commute_monitoring.service.dart';
 import 'package:overwatchapp/stops_at_location_list.dart';
 import 'package:overwatchapp/utils/app_container.dart';
 import 'package:overwatchapp/utils/native_messages.dart';
@@ -16,6 +17,7 @@ import 'package:path/path.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:overwatchapp/components/monitored_commute_alert.dart';
 
 const prod = bool.fromEnvironment('dart.vm.product');
 
@@ -52,22 +54,14 @@ void main() async {
 
   await dotenv.load(fileName: prod ? '.env.prod' : '.env');
 
-  var apiUrl = dotenv.env['API_URL'];
-  var apiKey = dotenv.env['API_KEY'];
-
-  if (apiUrl == null || apiKey == null) {
-    throw Exception('API_URL and API_KEY must be set in .env file');
-  }
-
   FlutterForegroundTask.initCommunicationPort();
 
-  GeoService geoService = GeoService();
-  appContainer.register<TransitApi>(
-      TransitApi(baseUrl: apiUrl, apiKey: apiKey, geoService: geoService));
+  appContainer.register<TransitApi>(TransitApi.fromEnv());
 
   runApp(MultiProvider(providers: [
     ChangeNotifierProvider(
         create: (context) => CommuteRouteRepository(database)),
+    ChangeNotifierProvider(create: (context) => CommuteMonitoringService()),
   ], child: const MyApp()));
 }
 
@@ -126,6 +120,8 @@ class SavedRoutesList extends StatefulWidget {
 }
 
 class _SavedRoutesListState extends State<SavedRoutesList> {
+  late Future<void> currentlyMonitoring;
+
   Future<void> _sendNotification() async {
     try {
       await sendNotification(const CreateNativeNotification(
@@ -138,13 +134,11 @@ class _SavedRoutesListState extends State<SavedRoutesList> {
   @override
   Widget build(BuildContext context) {
     return Consumer<CommuteRouteRepository>(
-        child: Column(
+        child: const Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            ElevatedButton(
-              onPressed: _sendNotification,
-              child: const Text('Create notification'),
-            ),
-            const Text('Commutes', textScaler: TextScaler.linear(1.5)),
+            MonitoredCommuteAlert(),
+            Text('Commutes', textScaler: TextScaler.linear(1.5)),
           ],
         ),
         builder: (context, commuteRepository, child) => Column(

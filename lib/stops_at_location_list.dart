@@ -28,9 +28,11 @@ class _StopsAtLocationListState extends State<StopsAtLocationList> {
 
     var data = await future;
 
-    setState(() {
-      _cachedTransitStops = data;
-    });
+    if (mounted) {
+      setState(() {
+        _cachedTransitStops = data;
+      });
+    }
   }
 
   @override

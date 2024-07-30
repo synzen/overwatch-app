@@ -3,6 +3,7 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <!-- For above android 12 to check bluetooth connection state -->
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" android:usesPermissionFlags="neverForLocation" />
     <!-- For below android 12 to check bluetooth connection state -->
@@ -14,6 +15,10 @@
         android:label="overwatchapp"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <service 
+        android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
+        android:foregroundServiceType="dataSync"
+        android:exported="false" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

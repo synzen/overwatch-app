@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import 'package:overwatchapp/data/geo_service.dart';
@@ -16,6 +17,18 @@ class TransitApi {
 
   TransitApi(
       {required this.baseUrl, required this.apiKey, required this.geoService});
+
+  factory TransitApi.fromEnv() {
+    var apiUrl = dotenv.env['API_URL'];
+    var apiKey = dotenv.env['API_KEY'];
+
+    if (apiUrl == null || apiKey == null) {
+      throw Exception('API_URL and API_KEY must be set in .env file');
+    }
+
+    return TransitApi(
+        baseUrl: apiUrl, apiKey: apiKey, geoService: GeoService());
+  }
 
   Future<GetTransitRoutesResponse> fetchTransitRoutes(String search) async {
     if (search.isEmpty) {

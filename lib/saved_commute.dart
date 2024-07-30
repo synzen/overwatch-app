@@ -2,9 +2,10 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:overwatchapp/stop_monitoring.dart';
+import 'package:overwatchapp/services/commute_monitoring.service.dart';
 import 'package:overwatchapp/types/get_transit_stop_arrival_time.types.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 
 class SavedCommute extends StatefulWidget {
   final String stopId;
@@ -42,19 +43,12 @@ class _SavedCommuteState extends State<SavedCommute> {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      title: Text(widget.name),
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => StopMonitoring(
-              stopId: widget.stopId,
-              name: widget.name,
-            ),
-          ),
-        );
-      },
-    );
+    return Consumer<CommuteMonitoringService>(
+        builder: (context, service, child) => ListTile(
+              title: Text(widget.name),
+              onTap: () {
+                service.startMonitoring(widget.name, [widget.stopId]);
+              },
+            ));
   }
 }
