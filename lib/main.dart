@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:overwatchapp/data/commute_route.repository.dart';
-import 'package:overwatchapp/data/geo_service.dart';
 import 'package:overwatchapp/data/transit_api.dart';
-import 'package:overwatchapp/routes_list.dart';
+import 'package:overwatchapp/pages/add_stop/add_commute.dart';
 import 'package:overwatchapp/saved_commute.dart';
 import 'package:overwatchapp/services/commute_monitoring.service.dart';
-import 'package:overwatchapp/stops_at_location_list.dart';
 import 'package:overwatchapp/utils/app_container.dart';
 import 'package:overwatchapp/utils/native_messages.dart';
 import 'package:overwatchapp/utils/print_debug.dart';
@@ -56,7 +55,9 @@ void main() async {
 
   FlutterForegroundTask.initCommunicationPort();
 
-  appContainer.register<TransitApi>(TransitApi.fromEnv());
+  appContainer
+      .register<TransitApi>(TransitApi.fromEnv())
+      .register<FlutterTts>(FlutterTts());
 
   runApp(MultiProvider(providers: [
     ChangeNotifierProvider(
@@ -181,28 +182,10 @@ class AddStopButton extends StatelessWidget {
     return FloatingActionButton(
       onPressed: () {
         Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => DefaultTabController(
-                  length: 2,
-                  child: Scaffold(
-                    appBar: AppBar(
-                      title: const Text('Add Commute'),
-                      bottom: const TabBar(
-                        tabs: [
-                          Tab(text: 'Nearby'),
-                          Tab(text: 'Search'),
-                        ],
-                      ),
-                    ),
-                    body: const TabBarView(
-                      children: [
-                        StopsAtLocationList(),
-                        RoutesList(),
-                      ],
-                    ),
-                  ))),
-        );
+            context,
+            MaterialPageRoute(
+              builder: (context) => const AddCommutePage(),
+            ));
       },
       child: const Icon(Icons.add),
     );

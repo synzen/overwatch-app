@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:overwatchapp/data/transit_api.dart';
-import 'package:overwatchapp/route_stops_list.dart';
+import 'package:overwatchapp/pages/add_stop/add_commute_routes_list_item.dart';
 import 'package:overwatchapp/types/get_transit_routes.types.dart';
 import 'package:overwatchapp/utils/app_container.dart';
 
-class RoutesList extends StatefulWidget {
-  const RoutesList({super.key});
+class AddCommuteRoutesList extends StatefulWidget {
+  const AddCommuteRoutesList({super.key});
 
   @override
-  State<RoutesList> createState() => _RoutesListState();
+  State<AddCommuteRoutesList> createState() => _AddCommuteRoutesListState();
 }
 
-class _RoutesListState extends State<RoutesList> {
+class _AddCommuteRoutesListState extends State<AddCommuteRoutesList> {
   Future<GetTransitRoutesResponse>? transitRoutes;
   late TextEditingController _searchController;
   bool _validate = false;
@@ -106,7 +106,8 @@ class _RoutesListState extends State<RoutesList> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => RouteStopsList(
+                                      builder: (context) =>
+                                          AddCommuteRoutesListItem(
                                         routeId: route.id,
                                         routeName: route.name,
                                       ),

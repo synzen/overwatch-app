@@ -1,20 +1,29 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:overwatchapp/data/commute_route.repository.dart';
 import 'package:overwatchapp/data/transit_api.dart';
-import 'package:overwatchapp/route_stop.dart';
+import 'package:overwatchapp/pages/add_stop/add_commute_stop_list_item.dart';
 import 'package:overwatchapp/types/get_transit_stops_at_location.types.dart';
 import 'package:overwatchapp/utils/app_container.dart';
 import 'package:overwatchapp/utils/print_debug.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-class StopsAtLocationList extends StatefulWidget {
-  const StopsAtLocationList({super.key});
+class AddCommuteStopList extends StatefulWidget {
+  final Function(String) onStopAdded;
+  final Function(String) onStopRemoved;
+  final HashSet<String> selectedStops;
+  const AddCommuteStopList(
+      {super.key,
+      required this.onStopAdded,
+      required this.onStopRemoved,
+      required this.selectedStops});
 
   @override
-  State<StopsAtLocationList> createState() => _StopsAtLocationListState();
+  State<AddCommuteStopList> createState() => _StopsAtLocationListState();
 }
 
-class _StopsAtLocationListState extends State<StopsAtLocationList> {
+class _StopsAtLocationListState extends State<AddCommuteStopList> {
   Future<GetTransitStopsAtLocation>? transitRoutes;
   GetTransitStopsAtLocation? _cachedTransitStops;
   bool refetching = false;
@@ -205,11 +214,24 @@ class _StopsAtLocationListState extends State<StopsAtLocationList> {
                           Column(
                             children: [
                               for (var stop in grouping.stops)
-                                RouteStop(
+                                AddCommmuteStopListItem(
                                   stopId: stop.id,
                                   stopName: stop.name,
                                   stopDescription: grouping.name,
                                   popCount: 2,
+                                  onChanged: (v) {
+                                    if (v == null) {
+                                      return;
+                                    }
+
+                                    if (v) {
+                                      widget.onStopAdded(stop.id);
+                                    } else {
+                                      widget.onStopRemoved(stop.id);
+                                    }
+                                  },
+                                  isChecked:
+                                      widget.selectedStops.contains(stop.id),
                                 ),
                             ],
                           ),

@@ -28,7 +28,7 @@ class HeadphoneStatusCheck {
   final bool pluggedIn;
   const HeadphoneStatusCheck({required this.pluggedIn});
 
-  factory HeadphoneStatusCheck.fromJson(Map<String, dynamic> json) {
+  factory HeadphoneStatusCheck.fromJson(Map<dynamic, dynamic> json) {
     return HeadphoneStatusCheck(pluggedIn: json['pluggedIn'] as bool);
   }
 }
@@ -36,7 +36,7 @@ class HeadphoneStatusCheck {
 Future<HeadphoneStatusCheck> sendHeadphonesPluggedStatusCheck() async {
   try {
     var res = await nativePlatform
-        .invokeMethod<Map<String, dynamic>>('checkHeadphones');
+        .invokeMethod<Map<dynamic, dynamic>>('checkHeadphones');
 
     if (res == null) {
       throw Exception('Missing response from native platform');

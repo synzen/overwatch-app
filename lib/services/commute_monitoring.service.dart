@@ -5,6 +5,7 @@ import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:overwatchapp/data/transit_api.dart';
 import 'package:overwatchapp/types/monitored_commute.types.dart';
+import 'package:overwatchapp/utils/app_container.dart';
 import 'package:overwatchapp/utils/native_messages.dart';
 import 'package:overwatchapp/utils/print_debug.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -20,21 +21,6 @@ void startCallback() {
 class MyTaskHandler extends TaskHandler {
   FlutterTts? tts;
   TransitApi? transitApi;
-
-  Future<void> speak(String text) async {
-    tts ??= FlutterTts();
-    var headphoneStatus = await sendHeadphonesPluggedStatusCheck();
-
-    if (!headphoneStatus.pluggedIn) {
-      return;
-    }
-
-    try {
-      await tts?.speak(text);
-    } catch (e) {
-      printForDebugging('Error speaking: $e');
-    }
-  }
 
   Future<void> handleTask() async {
     if (transitApi == null) {
@@ -55,13 +41,21 @@ class MyTaskHandler extends TaskHandler {
 
     var fastestArrival = arrivalTime.data.arrivals.elementAtOrNull(0);
 
+    var newTimerDuration = const Duration(minutes: 3);
+
+    var estimateText = "No arrival time available";
+
+    final Map<String, dynamic> data = {
+      "event": "updateTimer",
+      "newTimerDuration": newTimerDuration.inMilliseconds,
+      "estimateText": estimateText,
+    };
+
     if (fastestArrival == null) {
-      speak("No arrival time available");
+      FlutterForegroundTask.sendDataToMain(data);
 
       return;
     }
-
-    var newTimerDuration = const Duration(minutes: 3);
 
     if (fastestArrival.minutesUntilArrival < 3) {
       newTimerDuration = const Duration(seconds: 30);
@@ -80,13 +74,8 @@ class MyTaskHandler extends TaskHandler {
           "Arrival in ${fastestArrival.minutesUntilArrival} minute${fastestArrival.minutesUntilArrival > 1 ? 's' : ''}";
     }
 
-    speak(text);
-
-    final Map<String, dynamic> data = {
-      "event": "updateTimer",
-      "newTimerDuration": newTimerDuration.inMilliseconds,
-      "estimateText": text,
-    };
+    data["newTimerDuration"] = newTimerDuration.inMilliseconds;
+    data["estimateText"] = text;
 
     FlutterForegroundTask.sendDataToMain(data);
   }
@@ -157,6 +146,23 @@ class CommuteMonitoringService extends ChangeNotifier {
 
   CommuteMonitoringService() {
     FlutterForegroundTask.addTaskDataCallback(_onReceiveTaskData);
+  }
+
+  Future<void> _speak(String text) async {
+    var headphoneStatus = await sendHeadphonesPluggedStatusCheck();
+
+    if (!headphoneStatus.pluggedIn) {
+      printForDebugging('Headphones not plugged in');
+      return;
+    }
+
+    printForDebugging('Speaking: $text');
+
+    try {
+      await appContainer.get<FlutterTts>().speak(text);
+    } catch (e) {
+      printForDebugging('Error speaking: $e');
+    }
   }
 
   Future<void> _requestPermissions() async {
@@ -262,6 +268,8 @@ class CommuteMonitoringService extends ChangeNotifier {
     }
 
     estimateText = data["estimateText"];
+    _speak(estimateText!);
+
     notifyListeners();
   }
 

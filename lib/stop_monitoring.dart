@@ -21,7 +21,6 @@ class _StopMonitoringState extends State<StopMonitoring> {
   String minutesUntilArrival = '';
   int currentTimerDuration = 60;
   int refreshCount = 0;
-  FlutterTts tts = FlutterTts();
   late Timer? timer;
 
   Future<GetTransitStopArrivalTime> fetchArrivalTime() async {
@@ -66,7 +65,7 @@ class _StopMonitoringState extends State<StopMonitoring> {
     var headphoneStatus = await sendHeadphonesPluggedStatusCheck();
 
     if (headphoneStatus.pluggedIn) {
-      tts.speak(text).catchError((err) {
+      appContainer.get<FlutterTts>().speak(text).catchError((err) {
         printForDebugging("Error speaking: $err");
       });
     }
