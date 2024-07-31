@@ -25,7 +25,7 @@ class _StopMonitoringState extends State<StopMonitoring> {
   late Timer? timer;
 
   Future<GetTransitStopArrivalTime> fetchArrivalTime() async {
-    return appContainer.get<TransitApi>().fetchArrivalTime(widget.stopId);
+    return appContainer.get<TransitApi>().fetchArrivalTimes([widget.stopId]);
   }
 
   Future<void> _refreshData(bool showNotification) async {
@@ -33,15 +33,11 @@ class _StopMonitoringState extends State<StopMonitoring> {
     printForDebugging("Refreshing data...");
 
     minutesUntilArrival =
-        arrivalTime.data.arrival?.minutesUntilArrival.toString() ?? 'N/A';
+        arrivalTime.data.arrivals.elementAt(0).minutesUntilArrival.toString();
     lastRefreshTime = DateTime.now().toIso8601String();
     refreshCount++;
 
-    var arrival = arrivalTime.data.arrival;
-
-    if (arrival == null) {
-      return;
-    }
+    var arrival = arrivalTime.data.arrivals.elementAt(0);
 
     var newTimerDuration = const Duration(minutes: 3);
 

@@ -9,27 +9,34 @@ class GetTransitStopArrivalTime {
 }
 
 class Data {
-  Arrival? arrival;
+  List<Arrival> arrivals;
 
-  Data({required this.arrival});
+  Data({required this.arrivals});
 
   factory Data.fromJson(Map<String, dynamic> json) {
-    return Data(
-        arrival:
-            json['arrival'] != null ? Arrival.fromJson(json['arrival']) : null);
+    var arrivals = <Arrival>[];
+    json['arrivals'].forEach((v) {
+      arrivals.add(Arrival.fromJson(v));
+    });
+
+    return Data(arrivals: arrivals);
   }
 }
 
 class Arrival {
   String expectedArrivalTime;
   int minutesUntilArrival;
+  String routeLabel;
 
   Arrival(
-      {required this.expectedArrivalTime, required this.minutesUntilArrival});
+      {required this.expectedArrivalTime,
+      required this.minutesUntilArrival,
+      required this.routeLabel});
 
   factory Arrival.fromJson(Map<String, dynamic> json) {
     return Arrival(
         expectedArrivalTime: json['expected_arrival_time'],
-        minutesUntilArrival: json['minutes_until_arrival']);
+        minutesUntilArrival: json['minutes_until_arrival'],
+        routeLabel: json['route_label']);
   }
 }

@@ -21,6 +21,21 @@ class MyTaskHandler extends TaskHandler {
   FlutterTts? tts;
   TransitApi? transitApi;
 
+  Future<void> speak(String text) async {
+    tts ??= FlutterTts();
+    var headphoneStatus = await sendHeadphonesPluggedStatusCheck();
+
+    if (!headphoneStatus.pluggedIn) {
+      return;
+    }
+
+    try {
+      await tts?.speak(text);
+    } catch (e) {
+      printForDebugging('Error speaking: $e');
+    }
+  }
+
   Future<void> handleTask() async {
     if (transitApi == null) {
       await dotenv.load(fileName: prod ? '.env.prod' : '.env');
@@ -36,43 +51,36 @@ class MyTaskHandler extends TaskHandler {
 
     var commute = MonitoredCommute.fromJsonString(commuteStr);
 
-    var arrivalTime = await transitApi!.fetchArrivalTime(commute.stopIds.first);
+    var arrivalTime = await transitApi!.fetchArrivalTimes(commute.stopIds);
 
-    var arrival = arrivalTime.data.arrival;
+    var fastestArrival = arrivalTime.data.arrivals.elementAtOrNull(0);
 
-    if (arrival == null) {
+    if (fastestArrival == null) {
+      speak("No arrival time available");
+
       return;
     }
 
     var newTimerDuration = const Duration(minutes: 3);
 
-    if (arrival.minutesUntilArrival < 3) {
+    if (fastestArrival.minutesUntilArrival < 3) {
       newTimerDuration = const Duration(seconds: 30);
-    } else if (arrival.minutesUntilArrival < 5) {
+    } else if (fastestArrival.minutesUntilArrival < 5) {
       newTimerDuration = const Duration(minutes: 1);
-    } else if (arrival.minutesUntilArrival < 7) {
+    } else if (fastestArrival.minutesUntilArrival < 7) {
       newTimerDuration = const Duration(minutes: 2);
     }
 
     String text;
 
-    if (arrival.minutesUntilArrival == 0) {
+    if (fastestArrival.minutesUntilArrival == 0) {
       text = "Arriving now";
     } else {
       text =
-          "Arrival in ${arrival.minutesUntilArrival} minute${arrival.minutesUntilArrival > 1 ? 's' : ''}";
+          "Arrival in ${fastestArrival.minutesUntilArrival} minute${fastestArrival.minutesUntilArrival > 1 ? 's' : ''}";
     }
 
-    var headphoneStatus = await sendHeadphonesPluggedStatusCheck();
-
-    printForDebugging('Headphone status: $headphoneStatus');
-    if (headphoneStatus.pluggedIn) {
-      tts ??= FlutterTts();
-
-      tts?.speak(text).catchError((err) {
-        print("Error speaking: $err");
-      });
-    }
+    speak(text);
 
     final Map<String, dynamic> data = {
       "event": "updateTimer",
