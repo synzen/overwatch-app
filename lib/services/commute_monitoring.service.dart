@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:overwatchapp/data/transit_api.dart';
+import 'package:overwatchapp/types/get_transit_stop_arrival_time.types.dart';
 import 'package:overwatchapp/types/monitored_commute.types.dart';
 import 'package:overwatchapp/utils/app_container.dart';
 import 'package:overwatchapp/utils/native_messages.dart';
@@ -49,6 +50,7 @@ class MyTaskHandler extends TaskHandler {
       "event": "updateTimer",
       "newTimerDuration": newTimerDuration.inMilliseconds,
       "estimateText": estimateText,
+      "arrivalTimes": arrivalTime.toJson(),
     };
 
     if (fastestArrival == null) {
@@ -68,10 +70,18 @@ class MyTaskHandler extends TaskHandler {
     String text;
 
     if (fastestArrival.minutesUntilArrival == 0) {
-      text = "Arriving now";
+      text = "${fastestArrival.routeLabel} arriving now";
     } else {
       text =
-          "Arrival in ${fastestArrival.minutesUntilArrival} minute${fastestArrival.minutesUntilArrival > 1 ? 's' : ''}";
+          "${fastestArrival.routeLabel} in ${fastestArrival.minutesUntilArrival} minute${fastestArrival.minutesUntilArrival > 1 ? 's' : ''}";
+    }
+
+    var nextFastestArrival = arrivalTime.data.arrivals.elementAtOrNull(1);
+
+    if (nextFastestArrival != null &&
+        nextFastestArrival.minutesUntilArrival < 6) {
+      text +=
+          ", ${nextFastestArrival.routeLabel} in ${nextFastestArrival.minutesUntilArrival} minutes";
     }
 
     data["newTimerDuration"] = newTimerDuration.inMilliseconds;
@@ -143,6 +153,7 @@ class CommuteMonitoringService extends ChangeNotifier {
   MonitoredCommute? _monitoredCommute;
   int timerDurationMs = 3 * 60 * 1000;
   String? estimateText;
+  GetTransitStopArrivalTime? arrivalTimes;
 
   CommuteMonitoringService() {
     FlutterForegroundTask.addTaskDataCallback(_onReceiveTaskData);
@@ -268,6 +279,10 @@ class CommuteMonitoringService extends ChangeNotifier {
     }
 
     estimateText = data["estimateText"];
+    arrivalTimes = data["arrivalTimes"] != null
+        ? GetTransitStopArrivalTime.fromJson(data["arrivalTimes"])
+        : null;
+
     _speak(estimateText!);
 
     notifyListeners();
@@ -288,7 +303,7 @@ class CommuteMonitoringService extends ChangeNotifier {
       printForDebugging('service is not running');
       return FlutterForegroundTask.startService(
         notificationTitle: 'Monitoring commute: $name',
-        notificationText: 'Checking...',
+        notificationText: '',
         notificationButtons: [
           const NotificationButton(
             id: 'stop_monitoring',

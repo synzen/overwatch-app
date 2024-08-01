@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_foreground_task/flutter_foreground_task.dart';
-import 'package:overwatchapp/components/loader.dart';
 import 'package:overwatchapp/services/commute_monitoring.service.dart';
-import 'package:overwatchapp/types/monitored_commute.types.dart';
-import 'package:overwatchapp/utils/print_debug.dart';
 import 'package:provider/provider.dart';
 
 class MonitoredCommuteAlert extends StatefulWidget {
@@ -14,55 +10,6 @@ class MonitoredCommuteAlert extends StatefulWidget {
 }
 
 class _MonitoredCommuteAlertState extends State<MonitoredCommuteAlert> {
-  late Future<MonitoredCommute?> _monitoredCommute;
-
-  @override
-  void initState() {
-    super.initState();
-    setState(() {
-      _monitoredCommute =
-          FlutterForegroundTask.isRunningService.then((isRunning) {
-        if (isRunning) {
-          printForDebugging('RUNNING: Getting monitored commute');
-          return FlutterForegroundTask.getData<String>(key: "commute");
-        } else {
-          printForDebugging('NOT RUNNING: No monitored commute');
-          return Future.value(null);
-        }
-      }).then((v) {
-        if (v != null) {
-          return MonitoredCommute.fromJsonString(v);
-        } else {
-          return null;
-        }
-      });
-    });
-  }
-
-  @override
-  void reassemble() {
-    super.reassemble();
-    setState(() {
-      _monitoredCommute =
-          FlutterForegroundTask.isRunningService.then((isRunning) {
-        if (isRunning) {
-          printForDebugging('RUNNING: Getting monitored commute');
-          return FlutterForegroundTask.getData<String>(key: "commute");
-        } else {
-          printForDebugging('NOT RUNNING: No monitored commute');
-          return Future.value(null);
-        }
-      }).then((v) {
-        // printForDebugging('Monitored commute: $v');
-        if (v != null) {
-          return MonitoredCommute.fromJsonString(v);
-        } else {
-          return null;
-        }
-      });
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Consumer<CommuteMonitoringService>(
@@ -79,29 +26,45 @@ class _MonitoredCommuteAlertState extends State<MonitoredCommuteAlert> {
                     child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            "Currently monitoring commute...",
-                            textAlign: TextAlign.left,
-                            style: TextStyle(
-                                color:
-                                    Theme.of(context).colorScheme.onSecondary),
-                          ),
                           Text(service.monitoredCommute!.name,
                               style: TextStyle(
                                   color:
                                       Theme.of(context).colorScheme.onSecondary,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 24)),
-                          if (service.estimateText != null)
-                            Text(
-                              service.estimateText ?? '',
-                              style: TextStyle(
-                                  color:
-                                      Theme.of(context).colorScheme.onSecondary,
-                                  fontSize: 18),
-                            ),
+                          const SizedBox(
+                            height: 8,
+                          ),
+                          Text(
+                            service.arrivalTimes != null
+                                ? "${service.arrivalTimes!.data.arrivals.first.routeLabel} in ${service.arrivalTimes!.data.arrivals.first.minutesUntilArrival} minutes"
+                                : "No arrivals found yet",
+                            style: TextStyle(
+                                color:
+                                    Theme.of(context).colorScheme.onSecondary,
+                                fontSize: 18),
+                          ),
+                          if (service.arrivalTimes != null)
+                            Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const SizedBox(
+                                    height: 4,
+                                  ),
+                                  for (final arrival in service
+                                      .arrivalTimes!.data.arrivals
+                                      .sublist(1))
+                                    Text(
+                                      '${arrival.routeLabel} in ${arrival.minutesUntilArrival} minutes',
+                                      style: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSecondary,
+                                          fontSize: 14),
+                                    )
+                                ]),
                           Container(
-                              margin: const EdgeInsets.only(top: 16),
+                              margin: const EdgeInsets.only(top: 12),
                               child: FilledButton.tonal(
                                   onPressed: () {
                                     service.stopMonitoring();

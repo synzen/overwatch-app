@@ -6,6 +6,10 @@ class GetTransitStopArrivalTime {
   factory GetTransitStopArrivalTime.fromJson(Map<String, dynamic> json) {
     return GetTransitStopArrivalTime(data: Data.fromJson(json['data']));
   }
+
+  toJson() {
+    return {'data': data.toJson()};
+  }
 }
 
 class Data {
@@ -20,6 +24,10 @@ class Data {
     });
 
     return Data(arrivals: arrivals);
+  }
+
+  toJson() {
+    return {'arrivals': arrivals.map((e) => e.toJson()).toList()};
   }
 }
 
@@ -38,5 +46,13 @@ class Arrival {
         expectedArrivalTime: json['expected_arrival_time'],
         minutesUntilArrival: json['minutes_until_arrival'],
         routeLabel: json['route_label']);
+  }
+
+  toJson() {
+    return {
+      'expected_arrival_time': expectedArrivalTime,
+      'minutes_until_arrival': minutesUntilArrival,
+      'route_label': routeLabel
+    };
   }
 }

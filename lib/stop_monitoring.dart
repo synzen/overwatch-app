@@ -51,10 +51,10 @@ class _StopMonitoringState extends State<StopMonitoring> {
     String text;
 
     if (arrival.minutesUntilArrival == 0) {
-      text = "Arriving now";
+      text = "${arrival.routeLabel} arriving";
     } else {
       text =
-          "Arrival in ${arrival.minutesUntilArrival} minute${arrival.minutesUntilArrival > 1 ? 's' : ''}";
+          "${arrival.routeLabel} in ${arrival.minutesUntilArrival} minute${arrival.minutesUntilArrival > 1 ? 's' : ''}";
     }
 
     sendNotification(CreateNativeNotification(
