@@ -332,6 +332,9 @@ class CommuteMonitoringService extends ChangeNotifier {
     FlutterForegroundTask.stopService();
 
     _monitoredCommute = null;
+    arrivalTimes = null;
+    estimateText = null;
+    notifyListeners();
 
     notifyListeners();
   }

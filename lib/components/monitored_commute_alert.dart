@@ -38,7 +38,7 @@ class _MonitoredCommuteAlertState extends State<MonitoredCommuteAlert> {
                           Text(
                             service.arrivalTimes != null
                                 ? "${service.arrivalTimes!.data.arrivals.first.routeLabel} in ${service.arrivalTimes!.data.arrivals.first.minutesUntilArrival} minutes"
-                                : "No arrivals found yet",
+                                : "Locating arrivals...",
                             style: TextStyle(
                                 color:
                                     Theme.of(context).colorScheme.onSecondary,
