@@ -5,7 +5,7 @@ import 'package:overwatchapp/data/commute_route.repository.dart';
 import 'package:provider/provider.dart';
 
 class AddCommuteDialog extends StatefulWidget {
-  final HashSet<String> selectedStops;
+  final HashMap<String, CommuteRouteStop> selectedStops;
   final Function() onSave;
 
   const AddCommuteDialog(
@@ -16,14 +16,14 @@ class AddCommuteDialog extends StatefulWidget {
 }
 
 class _AddCommuteDialogState extends State<AddCommuteDialog> {
-  late TextEditingController _commuteNameController;
+  final TextEditingController _commuteNameController = TextEditingController();
   String? _errorText;
 
   void saveStopsToCommute(CommuteRouteRepository repo) {
     repo
         .insert(CommuteRoute(
             name: _commuteNameController.text,
-            stopIds: widget.selectedStops.toList()))
+            stops: widget.selectedStops.values.toList()))
         .then((_) {
       Navigator.of(context).pop();
       widget.onSave();

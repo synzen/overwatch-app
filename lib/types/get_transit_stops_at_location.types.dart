@@ -27,10 +27,12 @@ class Data {
 }
 
 class Route {
+  String id;
   String name;
   List<Grouping> groupings;
 
   Route({
+    required this.id,
     required this.name,
     required this.groupings,
   });
@@ -41,7 +43,7 @@ class Route {
       groupings.add(Grouping.fromJson(v));
     });
 
-    return Route(name: json['name'], groupings: groupings);
+    return Route(id: json["id"], name: json['name'], groupings: groupings);
   }
 }
 

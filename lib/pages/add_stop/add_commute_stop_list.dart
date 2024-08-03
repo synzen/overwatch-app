@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:flutter/material.dart';
 import 'package:overwatchapp/data/commute_route.repository.dart';
 import 'package:overwatchapp/data/transit_api.dart';
@@ -10,14 +8,14 @@ import 'package:overwatchapp/utils/print_debug.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class AddCommuteStopList extends StatefulWidget {
-  final Function(String) onStopAdded;
-  final Function(String) onStopRemoved;
-  final HashSet<String> selectedStops;
+  final void Function(CommuteRouteStop) onStopAdded;
+  final void Function(CommuteRouteStop) onStopRemoved;
+  final bool Function(CommuteRouteStop) isStopSelected;
   const AddCommuteStopList(
       {super.key,
       required this.onStopAdded,
       required this.onStopRemoved,
-      required this.selectedStops});
+      required this.isStopSelected});
 
   @override
   State<AddCommuteStopList> createState() => _StopsAtLocationListState();
@@ -70,41 +68,6 @@ class _StopsAtLocationListState extends State<AddCommuteStopList> {
 
   void onClickOpenAppSettings() {
     openAppSettings();
-  }
-
-  void saveStopToCommute(BuildContext context, CommuteRouteRepository repo,
-      String name, String stopId) {
-    appContainer
-        .get<CommuteRouteRepository>()
-        .insert(CommuteRoute(name: name, stopIds: [stopId]))
-        .then((route) {
-      Navigator.of(context)
-        ..pop()
-        ..pop()
-        ..pop();
-    }).catchError((err) {
-      if (err is DuplicateCommuteRouteException) {
-        showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-                  title: const Text('Duplicate commute name'),
-                  content: const Text(
-                      'This name is already in use. Please choose another.'),
-                  actions: [
-                    TextButton(
-                        style: const ButtonStyle(alignment: Alignment.topLeft),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: const Text('OK'))
-                  ],
-                ));
-
-        return;
-      }
-
-      throw err;
-    });
   }
 
   @override
@@ -199,7 +162,7 @@ class _StopsAtLocationListState extends State<AddCommuteStopList> {
                       child: const Center(child: CircularProgressIndicator())),
 
                 if (!refetching && snapshot.hasData)
-                  for (var route in snapshot.data!.data.routes)
+                  for (final route in snapshot.data!.data.routes)
                     Column(
                       children: [
                         Container(
@@ -210,28 +173,33 @@ class _StopsAtLocationListState extends State<AddCommuteStopList> {
                                 style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 18))),
-                        for (var grouping in route.groupings)
+                        for (final grouping in route.groupings)
                           Column(
                             children: [
-                              for (var stop in grouping.stops)
+                              for (final stop in grouping.stops)
                                 AddCommmuteStopListItem(
                                   stopId: stop.id,
                                   stopName: stop.name,
                                   stopDescription: grouping.name,
+                                  routeId: route.id,
                                   popCount: 2,
                                   onChanged: (v) {
                                     if (v == null) {
                                       return;
                                     }
 
+                                    final commuteRouteStop = CommuteRouteStop(
+                                        id: stop.id, routeId: route.id);
+
                                     if (v) {
-                                      widget.onStopAdded(stop.id);
+                                      widget.onStopAdded(commuteRouteStop);
                                     } else {
-                                      widget.onStopRemoved(stop.id);
+                                      widget.onStopRemoved(commuteRouteStop);
                                     }
                                   },
-                                  isChecked:
-                                      widget.selectedStops.contains(stop.id),
+                                  isChecked: widget.isStopSelected(
+                                      CommuteRouteStop(
+                                          id: stop.id, routeId: route.id)),
                                 ),
                             ],
                           ),

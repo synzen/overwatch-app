@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 class AddCommmuteStopListItem extends StatefulWidget {
   final String stopId;
   final String stopName;
+  final String routeId;
   final int popCount;
   final String? stopDescription;
   final Function(bool?) onChanged;
@@ -15,6 +16,7 @@ class AddCommmuteStopListItem extends StatefulWidget {
       required this.stopId,
       required this.stopName,
       required this.popCount,
+      required this.routeId,
       this.stopDescription,
       required this.isChecked,
       required this.onChanged});
@@ -49,8 +51,9 @@ class _AddCommmuteStopListItemState extends State<AddCommmuteStopListItem> {
 
   void saveStopToCommute(BuildContext context, CommuteRouteRepository repo) {
     repo
-        .insert(CommuteRoute(
-            name: _commuteNameController.text, stopIds: [widget.stopId]))
+        .insert(CommuteRoute(name: _commuteNameController.text, stops: [
+      CommuteRouteStop(id: widget.stopId, routeId: widget.routeId)
+    ]))
         .then((route) {
       for (int i = 0; i < widget.popCount; i++) {
         Navigator.of(context).pop();

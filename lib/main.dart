@@ -26,13 +26,13 @@ void main() async {
 
   printForDebugging('Initializing database');
   final dbPath = join(await getDatabasesPath(), 'overwatch_db.db');
-  // await deleteDatabase(dbPath);
+  await deleteDatabase(dbPath);
   final database = openDatabase(dbPath, onCreate: (db, version) async {
     await db.execute(
       """
       CREATE TABLE commute_routes(
           id integer primary key,
-          name    text unique
+          name    text unique not null
       );
       """,
     );
@@ -40,9 +40,10 @@ void main() async {
     await db.execute("""
       CREATE TABLE commute_route_stops(
         id integer primary key,
-        route_id integer,
-        stop_id text,
-        FOREIGN KEY (route_id) REFERENCES commute_routes(id) ON DELETE CASCADE
+        commute_id integer not null,
+        stop_id text not null,
+        route_id text not null,
+        FOREIGN KEY (commute_id) REFERENCES commute_routes(id) ON DELETE CASCADE
       );
       """);
   }, onConfigure: (Database db) async {
@@ -157,8 +158,7 @@ class _SavedRoutesListState extends State<SavedRoutesList> {
 
                       final components = snapshot.data
                               ?.map((commute) => SavedCommute(
-                                  name: commute.name,
-                                  stopId: commute.stopIds[0]))
+                                  name: commute.name, stops: commute.stops))
                               .toList() ??
                           [];
 

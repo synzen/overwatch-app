@@ -4,13 +4,27 @@ import 'package:sqflite/sqflite.dart';
 
 class CommuteRoute {
   final String name;
-  final List<String> stopIds;
+  final List<CommuteRouteStop> stops;
 
-  CommuteRoute({required this.name, required this.stopIds});
+  CommuteRoute({required this.name, required this.stops});
 
   @override
   String toString() {
-    return 'CommuteRoute{id: $name, name: $stopIds}';
+    return 'CommuteRoute{id: $name, name: $stops}';
+  }
+}
+
+class CommuteRouteStop {
+  final String id;
+  final String routeId;
+
+  CommuteRouteStop({required this.id, required this.routeId});
+
+  String get hashKey => "$id-$routeId";
+
+  @override
+  String toString() {
+    return 'CommuteRouteStop{id: $id, routeId: $routeId}';
   }
 }
 
@@ -23,18 +37,18 @@ class CommuteRouteRepository extends ChangeNotifier {
 
   CommuteRouteRepository(this.database);
 
-  Future<void> insert(CommuteRoute route) async {
+  Future<void> insert(CommuteRoute commute) async {
     Database? db;
     try {
       db = await database;
 
       await db.execute("BEGIN TRANSACTION");
       await db.execute(
-          "INSERT INTO commute_routes (name) VALUES (?)", [route.name]);
-      for (final stopId in route.stopIds) {
+          "INSERT INTO commute_routes (name) VALUES (?)", [commute.name]);
+      for (final stop in commute.stops) {
         await db.execute(
-            "INSERT INTO commute_route_stops (route_id, stop_id) VALUES ((SELECT last_insert_rowid()), ?)",
-            [stopId]);
+            "INSERT INTO commute_route_stops (commute_id, stop_id, route_id) VALUES ((SELECT last_insert_rowid()), ?, ?)",
+            [stop.id, stop.routeId]);
       }
       await db.execute("COMMIT TRANSACTION");
 
@@ -61,26 +75,38 @@ class CommuteRouteRepository extends ChangeNotifier {
       final results = await db.rawQuery("""
       SELECT
         commute_routes.name AS commute_route_name,
-        commute_route_stops.stop_id
+        commute_route_stops.stop_id,
+        commute_route_stops.route_id
         FROM commute_routes
-        INNER JOIN commute_route_stops ON commute_routes.id = commute_route_stops.route_id;
+        INNER JOIN commute_route_stops ON commute_routes.id = commute_route_stops.commute_id;
       """);
 
-      final Map<String, List<String>> routes = {};
+      final Map<String, List<CommuteRouteStop>> commutes = {};
+      final Map<String, CommuteRouteStop> stops = {};
 
       for (final result in results) {
-        final routeName = result['commute_route_name'] as String;
+        // final commuteName = result['commute_route_name'] as String;
         final stopId = result['stop_id'] as String;
+        final routeId = result['route_id'] as String;
 
-        if (!routes.containsKey(routeName)) {
-          routes[routeName] = [];
+        if (!stops.containsKey(stopId)) {
+          stops[stopId] = CommuteRouteStop(id: stopId, routeId: routeId);
         }
-
-        routes[routeName]!.add(stopId);
       }
 
-      return routes.entries
-          .map((entry) => CommuteRoute(name: entry.key, stopIds: entry.value))
+      for (final result in results) {
+        final commuteName = result['commute_route_name'] as String;
+        final stopId = result['stop_id'] as String;
+
+        if (!commutes.containsKey(commuteName)) {
+          commutes[commuteName] = [];
+        }
+
+        commutes[commuteName]!.add(stops[stopId]!);
+      }
+
+      return commutes.entries
+          .map((entry) => CommuteRoute(name: entry.key, stops: entry.value))
           .toList();
     } catch (e) {
       printForDebugging("Error fetching commute routes: $e");

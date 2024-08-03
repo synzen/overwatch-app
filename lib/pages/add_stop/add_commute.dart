@@ -2,6 +2,7 @@ import 'dart:collection';
 
 import 'package:flutter/material.dart';
 import 'package:overwatchapp/components/add_commute_dialog.dart';
+import 'package:overwatchapp/data/commute_route.repository.dart';
 import 'package:overwatchapp/pages/add_stop/add_commute_routes_list.dart';
 import 'package:overwatchapp/pages/add_stop/add_commute_stop_list.dart';
 
@@ -13,17 +14,17 @@ class AddCommutePage extends StatefulWidget {
 }
 
 class _AddCommutePageState extends State<AddCommutePage> {
-  final HashSet<String> _selectedStops = HashSet();
+  final HashMap<String, CommuteRouteStop> _selectedStops = HashMap();
 
-  void onStopAdded(String stopId) {
+  void onStopAdded(CommuteRouteStop stop) {
     setState(() {
-      _selectedStops.add(stopId);
+      _selectedStops[stop.hashKey] = stop;
     });
   }
 
-  void onStopRemoved(String stopId) {
+  void onStopRemoved(CommuteRouteStop stop) {
     setState(() {
-      _selectedStops.remove(stopId);
+      _selectedStops.remove(stop.hashKey);
     });
   }
 
@@ -35,6 +36,10 @@ class _AddCommutePageState extends State<AddCommutePage> {
             onSave: () {
               Navigator.of(context).pop();
             }));
+  }
+
+  bool isStopSelected(CommuteRouteStop stop) {
+    return _selectedStops.containsKey(stop.hashKey);
   }
 
   @override
@@ -69,7 +74,7 @@ class _AddCommutePageState extends State<AddCommutePage> {
               AddCommuteStopList(
                 onStopAdded: onStopAdded,
                 onStopRemoved: onStopRemoved,
-                selectedStops: _selectedStops,
+                isStopSelected: isStopSelected,
               ),
               const AddCommuteRoutesList(),
             ],

@@ -73,6 +73,7 @@ class _AddCommuteRoutesListItemState extends State<AddCommuteRoutesListItem> {
                                     .map((stop) => AddCommmuteStopListItem(
                                           stopId: stop.id,
                                           stopName: stop.name,
+                                          routeId: widget.routeId,
                                           popCount: 3,
                                           isChecked:
                                               _selectedStops.contains(stop.id),
