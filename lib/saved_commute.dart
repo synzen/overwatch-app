@@ -19,8 +19,7 @@ class _SavedCommuteState extends State<SavedCommute> {
         builder: (context, service, child) => ListTile(
               title: Text(widget.name),
               onTap: () {
-                service.startMonitoring(widget.name,
-                    widget.stops.map((s) => s.id).toSet().toList());
+                service.startMonitoring(widget.name, widget.stops);
               },
             ));
   }

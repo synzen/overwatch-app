@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:just_audio/just_audio.dart';
@@ -26,7 +25,7 @@ void main() async {
 
   printForDebugging('Initializing database');
   final dbPath = join(await getDatabasesPath(), 'overwatch_db.db');
-  await deleteDatabase(dbPath);
+  // await deleteDatabase(dbPath);
   final database = openDatabase(dbPath, onCreate: (db, version) async {
     await db.execute(
       """
@@ -123,15 +122,6 @@ class SavedRoutesList extends StatefulWidget {
 
 class _SavedRoutesListState extends State<SavedRoutesList> {
   late Future<void> currentlyMonitoring;
-
-  Future<void> _sendNotification() async {
-    try {
-      await sendNotification(const CreateNativeNotification(
-          description: "some description", title: 'My Title'));
-    } on PlatformException catch (e) {
-      printForDebugging('Error sending notification: $e');
-    }
-  }
 
   @override
   Widget build(BuildContext context) {

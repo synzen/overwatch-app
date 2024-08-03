@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:overwatchapp/data/commute_route.repository.dart';
 import 'package:overwatchapp/data/transit_api.dart';
 import 'package:overwatchapp/types/get_transit_stop_arrival_time.types.dart';
 import 'package:overwatchapp/types/monitored_commute.types.dart';
@@ -38,7 +39,9 @@ class MyTaskHandler extends TaskHandler {
 
     var commute = MonitoredCommute.fromJsonString(commuteStr);
 
-    var arrivalTime = await transitApi!.fetchArrivalTimes(commute.stopIds);
+    var arrivalTime = await transitApi!.fetchArrivalTimes(
+        commute.stops.map((s) => s.id).toList(),
+        commute.stops.map((s) => s.routeId).toList());
 
     var fastestArrival = arrivalTime.data.arrivals.elementAtOrNull(0);
 
@@ -101,8 +104,9 @@ class MyTaskHandler extends TaskHandler {
   void onRepeatEvent(DateTime timestamp) {
     printForDebugging('onRepeat 2');
 
-    handleTask().catchError((e) {
-      printForDebugging('Error handling task: $e');
+    handleTask().catchError((e, stackTrace) {
+      printForDebugging('Error in task: $e');
+      printForDebugging(stackTrace);
     });
   }
 
@@ -289,13 +293,15 @@ class CommuteMonitoringService extends ChangeNotifier {
   }
 
   Future<ServiceRequestResult> _startService(
-      String name, List<String> stopIds) async {
-    await FlutterForegroundTask.saveData(
-        key: "commute",
-        value: MonitoredCommute(
-          name: name,
-          stopIds: stopIds,
-        ).toJsonString());
+      String name, List<CommuteRouteStop> stops) async {
+    final dataToSave = MonitoredCommute(
+      name: name,
+      stops: stops,
+    ).toJsonString();
+
+    printForDebugging('Saving data: $dataToSave');
+
+    await FlutterForegroundTask.saveData(key: "commute", value: dataToSave);
     if (await FlutterForegroundTask.isRunningService) {
       printForDebugging('service is already running');
       return FlutterForegroundTask.restartService();
@@ -317,13 +323,14 @@ class CommuteMonitoringService extends ChangeNotifier {
 
   MonitoredCommute? get monitoredCommute => _monitoredCommute;
 
-  Future<void> startMonitoring(String commuteName, List<String> stopIds) async {
+  Future<void> startMonitoring(
+      String commuteName, List<CommuteRouteStop> stops) async {
     await _requestPermissions();
     await _initService(commuteName);
-    await _startService(commuteName, stopIds);
+    await _startService(commuteName, stops);
     printForDebugging('service started');
 
-    _monitoredCommute = MonitoredCommute(name: commuteName, stopIds: stopIds);
+    _monitoredCommute = MonitoredCommute(name: commuteName, stops: stops);
 
     notifyListeners();
   }

@@ -35,16 +35,26 @@ class _MonitoredCommuteAlertState extends State<MonitoredCommuteAlert> {
                           const SizedBox(
                             height: 8,
                           ),
-                          Text(
-                            service.arrivalTimes != null
-                                ? "${service.arrivalTimes!.data.arrivals.first.routeLabel} in ${service.arrivalTimes!.data.arrivals.first.minutesUntilArrival} minutes"
-                                : "Locating arrivals...",
-                            style: TextStyle(
-                                color:
-                                    Theme.of(context).colorScheme.onSecondary,
-                                fontSize: 18),
-                          ),
                           if (service.arrivalTimes != null)
+                            Text(
+                              service.arrivalTimes!.data.arrivals.isNotEmpty
+                                  ? "${service.arrivalTimes!.data.arrivals.first.routeLabel} in ${service.arrivalTimes!.data.arrivals.first.minutesUntilArrival} minutes"
+                                  : "No arrivals found",
+                              style: TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.onSecondary,
+                                  fontSize: 18),
+                            ),
+                          if (service.arrivalTimes == null)
+                            Text(
+                              "Locating arrivals...",
+                              style: TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.onSecondary,
+                                  fontSize: 18),
+                            ),
+                          if (service.arrivalTimes != null &&
+                              service.arrivalTimes!.data.arrivals.isNotEmpty)
                             Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [

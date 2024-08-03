@@ -131,12 +131,14 @@ class TransitApi {
   }
 
   Future<GetTransitStopArrivalTime> fetchArrivalTimes(
-      List<String> stopIds) async {
+      List<String> stopIds, List<String> routeIds) async {
     try {
-      final response = await http.get(
-          Uri.parse(
-              '$baseUrl/transit-arrival-times?stop_ids=${Uri.encodeComponent(stopIds.join(','))}'),
-          headers: {'Temp-Authorization': apiKey});
+      final uri = Uri.parse(
+          '$baseUrl/transit-arrival-times?stop_ids=${Uri.encodeComponent(stopIds.join(','))}&route_ids=${Uri.encodeComponent(routeIds.join(','))}');
+
+      printForDebugging('Fetching arrival times from $uri');
+      final response =
+          await http.get(uri, headers: {'Temp-Authorization': apiKey});
 
       if (response.statusCode == 200) {
         return GetTransitStopArrivalTime.fromJson(

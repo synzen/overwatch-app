@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:overwatchapp/utils/print_debug.dart';
 import 'package:sqflite/sqflite.dart';
@@ -25,6 +27,19 @@ class CommuteRouteStop {
   @override
   String toString() {
     return 'CommuteRouteStop{id: $id, routeId: $routeId}';
+  }
+
+  String toJson() {
+    return jsonEncode({
+      'id': id,
+      'routeId': routeId,
+    });
+  }
+
+  factory CommuteRouteStop.fromJson(String jsonString) {
+    final Map<String, dynamic> json = jsonDecode(jsonString);
+
+    return CommuteRouteStop(id: json['id'], routeId: json['routeId']);
   }
 }
 
