@@ -325,6 +325,7 @@ class CommuteMonitoringService extends ChangeNotifier {
 
   Future<void> startMonitoring(
       String commuteName, List<CommuteRouteStop> stops) async {
+    stopMonitoring();
     await _requestPermissions();
     await _initService(commuteName);
     await _startService(commuteName, stops);
@@ -341,8 +342,6 @@ class CommuteMonitoringService extends ChangeNotifier {
     _monitoredCommute = null;
     arrivalTimes = null;
     estimateText = null;
-    notifyListeners();
-
     notifyListeners();
   }
 }

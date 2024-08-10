@@ -1,6 +1,8 @@
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
+import 'package:overwatchapp/components/add_commute_dialog.dart';
+import 'package:overwatchapp/data/commute_route.repository.dart';
 import 'package:overwatchapp/data/transit_api.dart';
 import 'package:overwatchapp/pages/add_stop/add_commute_stop_list_item.dart';
 import 'package:overwatchapp/types/get_transit_stop_for_route.types.dart';
@@ -19,10 +21,38 @@ class AddCommuteRoutesListItem extends StatefulWidget {
 
 class _AddCommuteRoutesListItemState extends State<AddCommuteRoutesListItem> {
   late Future<GetTransitStopsForRoute> stops;
-  final HashSet<String> _selectedStops = HashSet();
+  final HashMap<String, CommuteRouteStop> _selectedStops = HashMap();
 
   Future<GetTransitStopsForRoute> fetchStops() async {
     return appContainer.get<TransitApi>().fetchStops(widget.routeId);
+  }
+
+  void onStopAdded(CommuteRouteStop stop) {
+    setState(() {
+      _selectedStops[stop.hashKey] = stop;
+    });
+  }
+
+  void onStopRemoved(CommuteRouteStop stop) {
+    setState(() {
+      _selectedStops.remove(stop.hashKey);
+    });
+  }
+
+  bool isStopSelected(CommuteRouteStop stop) {
+    return _selectedStops.containsKey(stop.hashKey);
+  }
+
+  void onClickAdd(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (context) => AddCommuteDialog(
+            selectedStops: _selectedStops,
+            onSave: () {
+              Navigator.of(context)
+                ..pop()
+                ..pop();
+            }));
   }
 
   @override
@@ -44,6 +74,18 @@ class _AddCommuteRoutesListItemState extends State<AddCommuteRoutesListItem> {
     return Scaffold(
         appBar: AppBar(
           title: Text('Route ${widget.routeName}'),
+          actions: [
+            Container(
+                margin: const EdgeInsets.only(right: 16),
+                child: FilledButton(
+                  onPressed: _selectedStops.isEmpty
+                      ? null
+                      : () {
+                          onClickAdd(context);
+                        },
+                  child: const Text("Add"),
+                )),
+          ],
         ),
         body: SingleChildScrollView(
           child: FutureBuilder<GetTransitStopsForRoute>(
@@ -75,21 +117,24 @@ class _AddCommuteRoutesListItemState extends State<AddCommuteRoutesListItem> {
                                           stopName: stop.name,
                                           routeId: widget.routeId,
                                           popCount: 3,
-                                          isChecked:
-                                              _selectedStops.contains(stop.id),
+                                          isChecked: isStopSelected(
+                                              CommuteRouteStop(
+                                                  id: stop.id,
+                                                  routeId: widget.routeId)),
                                           onChanged: (v) {
                                             if (v == null) {
                                               return;
                                             }
 
+                                            final commuteRouteStop =
+                                                CommuteRouteStop(
+                                                    id: stop.id,
+                                                    routeId: widget.routeId);
+
                                             if (v) {
-                                              setState(() {
-                                                _selectedStops.add(stop.id);
-                                              });
+                                              onStopAdded(commuteRouteStop);
                                             } else {
-                                              setState(() {
-                                                _selectedStops.remove(stop.id);
-                                              });
+                                              onStopRemoved(commuteRouteStop);
                                             }
                                           },
                                         )),

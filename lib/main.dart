@@ -130,7 +130,6 @@ class _SavedRoutesListState extends State<SavedRoutesList> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             MonitoredCommuteAlert(),
-            Text('Commutes', textScaler: TextScaler.linear(1.5)),
           ],
         ),
         builder: (context, commuteRepository, child) => Column(
