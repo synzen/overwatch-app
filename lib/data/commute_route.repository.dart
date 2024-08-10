@@ -19,27 +19,31 @@ class CommuteRoute {
 class CommuteRouteStop {
   final String id;
   final String routeId;
+  final String routeName;
 
-  CommuteRouteStop({required this.id, required this.routeId});
+  CommuteRouteStop(
+      {required this.id, required this.routeId, required this.routeName});
 
   String get hashKey => "$id-$routeId";
 
   @override
   String toString() {
-    return 'CommuteRouteStop{id: $id, routeId: $routeId}';
+    return 'CommuteRouteStop{id: $id, routeId: $routeId, routeName: $routeName}';
   }
 
   String toJson() {
     return jsonEncode({
       'id': id,
       'routeId': routeId,
+      'routeName': routeName,
     });
   }
 
   factory CommuteRouteStop.fromJson(String jsonString) {
     final Map<String, dynamic> json = jsonDecode(jsonString);
 
-    return CommuteRouteStop(id: json['id'], routeId: json['routeId']);
+    return CommuteRouteStop(
+        id: json['id'], routeId: json['routeId'], routeName: json['routeName']);
   }
 }
 
@@ -60,10 +64,12 @@ class CommuteRouteRepository extends ChangeNotifier {
       await db.execute("BEGIN TRANSACTION");
       await db.execute(
           "INSERT INTO commute_routes (name) VALUES (?)", [commute.name]);
+      var res = await db.query("commute_routes");
+      print(res);
       for (final stop in commute.stops) {
         await db.execute(
-            "INSERT INTO commute_route_stops (commute_id, stop_id, route_id) VALUES ((SELECT last_insert_rowid()), ?, ?)",
-            [stop.id, stop.routeId]);
+            "INSERT INTO commute_route_stops (commute_id, stop_id, route_id, route_name) VALUES ((SELECT last_insert_rowid()), ?, ?, ?)",
+            [stop.id, stop.routeId, stop.routeName]);
       }
       await db.execute("COMMIT TRANSACTION");
 
@@ -91,7 +97,8 @@ class CommuteRouteRepository extends ChangeNotifier {
       SELECT
         commute_routes.name AS commute_route_name,
         commute_route_stops.stop_id,
-        commute_route_stops.route_id
+        commute_route_stops.route_id,
+        commute_route_stops.route_name
         FROM commute_routes
         INNER JOIN commute_route_stops ON commute_routes.id = commute_route_stops.commute_id;
       """);
@@ -103,9 +110,11 @@ class CommuteRouteRepository extends ChangeNotifier {
         // final commuteName = result['commute_route_name'] as String;
         final stopId = result['stop_id'] as String;
         final routeId = result['route_id'] as String;
+        final routeName = result['route_name'] as String;
 
         if (!stops.containsKey(stopId)) {
-          stops[stopId] = CommuteRouteStop(id: stopId, routeId: routeId);
+          stops[stopId] = CommuteRouteStop(
+              id: stopId, routeId: routeId, routeName: routeName);
         }
       }
 

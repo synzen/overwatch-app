@@ -120,7 +120,8 @@ class _AddCommuteRoutesListItemState extends State<AddCommuteRoutesListItem> {
                                           isChecked: isStopSelected(
                                               CommuteRouteStop(
                                                   id: stop.id,
-                                                  routeId: widget.routeId)),
+                                                  routeId: widget.routeId,
+                                                  routeName: widget.routeName)),
                                           onChanged: (v) {
                                             if (v == null) {
                                               return;
@@ -129,7 +130,9 @@ class _AddCommuteRoutesListItemState extends State<AddCommuteRoutesListItem> {
                                             final commuteRouteStop =
                                                 CommuteRouteStop(
                                                     id: stop.id,
-                                                    routeId: widget.routeId);
+                                                    routeId: widget.routeId,
+                                                    routeName:
+                                                        widget.routeName);
 
                                             if (v) {
                                               onStopAdded(commuteRouteStop);

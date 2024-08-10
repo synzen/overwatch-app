@@ -189,7 +189,9 @@ class _StopsAtLocationListState extends State<AddCommuteStopList> {
                                     }
 
                                     final commuteRouteStop = CommuteRouteStop(
-                                        id: stop.id, routeId: route.id);
+                                        id: stop.id,
+                                        routeId: route.id,
+                                        routeName: route.name);
 
                                     if (v) {
                                       widget.onStopAdded(commuteRouteStop);
@@ -199,7 +201,9 @@ class _StopsAtLocationListState extends State<AddCommuteStopList> {
                                   },
                                   isChecked: widget.isStopSelected(
                                       CommuteRouteStop(
-                                          id: stop.id, routeId: route.id)),
+                                          id: stop.id,
+                                          routeId: route.id,
+                                          routeName: route.name)),
                                 ),
                             ],
                           ),

@@ -72,7 +72,7 @@ class TransitApi {
     try {
       final response = await http.get(
           Uri.parse(
-              '$baseUrl/transit-stops-at-location?lat=${Uri.encodeComponent(position.lat)}&lon=${Uri.encodeComponent(position.long)}'),
+              '$baseUrl/transit-stops-at-location?coordinates=${Uri.encodeComponent(position.lat)},${Uri.encodeComponent(position.long)}'),
           headers: {'Temp-Authorization': apiKey});
 
       if (response.statusCode == 200) {
@@ -93,7 +93,8 @@ class TransitApi {
           debugPrint(
               "Non-200 status code returned from server: ${response.statusCode}");
         }
-        throw Exception('Bad status code ${response.statusCode}');
+        throw Exception(
+            'Bad status code ${response.statusCode}: ${response.body}');
       }
     } catch (e) {
       if (kDebugMode) {

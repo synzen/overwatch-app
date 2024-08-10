@@ -101,7 +101,7 @@ class _SavedCommuteState extends State<SavedCommute> {
                         for (var stop in widget.stops)
                           CheckboxListTile(
                             title: Text(
-                              stop.routeId,
+                              stop.routeName,
                               style: Theme.of(context).textTheme.bodyMedium,
                             ),
                             value: selectedStops.contains(stop.hashKey),

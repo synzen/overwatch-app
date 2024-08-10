@@ -25,7 +25,7 @@ void main() async {
 
   printForDebugging('Initializing database');
   final dbPath = join(await getDatabasesPath(), 'overwatch_db.db');
-  // await deleteDatabase(dbPath);
+  await deleteDatabase(dbPath);
   final database = openDatabase(dbPath, onCreate: (db, version) async {
     await db.execute(
       """
@@ -42,7 +42,8 @@ void main() async {
         commute_id integer not null,
         stop_id text not null,
         route_id text not null,
-        FOREIGN KEY (commute_id) REFERENCES commute_routes(id) ON DELETE CASCADE
+        route_name text not null,
+        FOREIGN KEY (commute_id) REFERENCES commute_routes(id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
       );
       """);
   }, onConfigure: (Database db) async {
