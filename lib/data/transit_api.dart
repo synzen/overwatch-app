@@ -70,10 +70,12 @@ class TransitApi {
         forcePermission: promptForLocationPermission);
     printForDebugging('Position: ${position.lat}, ${position.long}');
     try {
-      final response = await http.get(
-          Uri.parse(
-              '$baseUrl/transit-stops-at-location?coordinates=${Uri.encodeComponent(position.lat)},${Uri.encodeComponent(position.long)}'),
-          headers: {'Temp-Authorization': apiKey});
+      var url =
+          '$baseUrl/transit-stops-at-location?coordinates=${Uri.encodeComponent(position.lat)},${Uri.encodeComponent(position.long)}';
+
+      printForDebugging(url);
+      final response = await http
+          .get(Uri.parse(url), headers: {'Temp-Authorization': apiKey});
 
       if (response.statusCode == 200) {
         var val = GetTransitStopsAtLocation.fromJson(

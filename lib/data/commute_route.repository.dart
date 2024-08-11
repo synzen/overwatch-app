@@ -6,9 +6,22 @@ import 'package:sqflite/sqflite.dart';
 
 class CommuteRoute {
   final String name;
+  final int id;
   final List<CommuteRouteStop> stops;
 
-  CommuteRoute({required this.name, required this.stops});
+  CommuteRoute({required this.id, required this.name, required this.stops});
+
+  @override
+  String toString() {
+    return 'CommuteRoute{id: $name, name: $stops}';
+  }
+}
+
+class NewCommuteRoute {
+  final String name;
+  final List<CommuteRouteStop> stops;
+
+  NewCommuteRoute({required this.name, required this.stops});
 
   @override
   String toString() {
@@ -56,7 +69,7 @@ class CommuteRouteRepository extends ChangeNotifier {
 
   CommuteRouteRepository(this.database);
 
-  Future<void> insert(CommuteRoute commute) async {
+  Future<void> insert(NewCommuteRoute commute) async {
     Database? db;
     try {
       db = await database;
@@ -64,8 +77,7 @@ class CommuteRouteRepository extends ChangeNotifier {
       await db.execute("BEGIN TRANSACTION");
       await db.execute(
           "INSERT INTO commute_routes (name) VALUES (?)", [commute.name]);
-      var res = await db.query("commute_routes");
-      print(res);
+
       for (final stop in commute.stops) {
         await db.execute(
             "INSERT INTO commute_route_stops (commute_id, stop_id, route_id, route_name) VALUES ((SELECT last_insert_rowid()), ?, ?, ?)",
@@ -95,6 +107,7 @@ class CommuteRouteRepository extends ChangeNotifier {
 
       final results = await db.rawQuery("""
       SELECT
+        commute_routes.id AS commute_id,
         commute_routes.name AS commute_route_name,
         commute_route_stops.stop_id,
         commute_route_stops.route_id,
@@ -103,35 +116,37 @@ class CommuteRouteRepository extends ChangeNotifier {
         INNER JOIN commute_route_stops ON commute_routes.id = commute_route_stops.commute_id;
       """);
 
-      final Map<String, List<CommuteRouteStop>> commutes = {};
-      final Map<String, CommuteRouteStop> stops = {};
+      // final Map<String, List<CommuteRouteStop>> commutes = {};
+      final Map<int, List<CommuteRouteStop>> stopsByCommuteId = {};
+      final Map<int, CommuteRoute> routes = {};
 
       for (final result in results) {
-        // final commuteName = result['commute_route_name'] as String;
         final stopId = result['stop_id'] as String;
         final routeId = result['route_id'] as String;
         final routeName = result['route_name'] as String;
+        final commuteId = result['commute_id'] as int;
 
-        if (!stops.containsKey(stopId)) {
-          stops[stopId] = CommuteRouteStop(
-              id: stopId, routeId: routeId, routeName: routeName);
+        if (!stopsByCommuteId.containsKey(commuteId)) {
+          stopsByCommuteId[commuteId] = [];
         }
+
+        stopsByCommuteId[commuteId]!.add(CommuteRouteStop(
+            id: stopId, routeId: routeId, routeName: routeName));
       }
 
       for (final result in results) {
+        final commuteId = result['commute_id'] as int;
         final commuteName = result['commute_route_name'] as String;
-        final stopId = result['stop_id'] as String;
 
-        if (!commutes.containsKey(commuteName)) {
-          commutes[commuteName] = [];
+        if (!routes.containsKey(commuteId)) {
+          routes[commuteId] = CommuteRoute(
+              id: commuteId,
+              name: commuteName,
+              stops: stopsByCommuteId[commuteId]!);
         }
-
-        commutes[commuteName]!.add(stops[stopId]!);
       }
 
-      return commutes.entries
-          .map((entry) => CommuteRoute(name: entry.key, stops: entry.value))
-          .toList();
+      return routes.values.toList();
     } catch (e) {
       printForDebugging("Error fetching commute routes: $e");
       rethrow;

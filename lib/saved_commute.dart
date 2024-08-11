@@ -1,14 +1,20 @@
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
+import 'package:overwatchapp/components/confirm_delete_commute_dialog.dart';
 import 'package:overwatchapp/data/commute_route.repository.dart';
 import 'package:overwatchapp/services/commute_monitoring.service.dart';
 import 'package:provider/provider.dart';
 
 class SavedCommute extends StatefulWidget {
+  final int commuteId;
   final List<CommuteRouteStop> stops;
   final String name;
-  const SavedCommute({super.key, required this.stops, required this.name});
+  const SavedCommute(
+      {super.key,
+      required this.commuteId,
+      required this.stops,
+      required this.name});
 
   @override
   State<SavedCommute> createState() => _SavedCommuteState();
@@ -54,6 +60,18 @@ class _SavedCommuteState extends State<SavedCommute> {
     setState(() {
       isExpanded = false;
     });
+  }
+
+  void onClickDelete(BuildContext context) {
+    // show alert to confirm
+    showDialog(
+        context: context,
+        builder: (context) => ConfirmDeleteCommuteDialog(
+              commuteId: widget.commuteId,
+              onDeleted: () {
+                Navigator.of(context).pop();
+              },
+            ));
   }
 
   @override
@@ -110,12 +128,29 @@ class _SavedCommuteState extends State<SavedCommute> {
                         Container(
                             alignment: Alignment.centerRight,
                             margin: const EdgeInsets.only(
-                                right: 16, bottom: 16, top: 8),
-                            child: FilledButton(
-                                onPressed: () {
-                                  onClickStartMonitoring(service);
-                                },
-                                child: const Text("Start Monitoring"))),
+                                left: 16, right: 16, bottom: 16, top: 8),
+                            child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  OutlinedButton(
+                                      // error themed
+                                      style: ButtonStyle(
+                                          foregroundColor:
+                                              WidgetStateProperty.all(
+                                                  Theme.of(context)
+                                                      .colorScheme
+                                                      .error)),
+                                      onPressed: () {
+                                        onClickDelete(context);
+                                      },
+                                      child: const Text("Delete")),
+                                  FilledButton(
+                                      onPressed: () {
+                                        onClickStartMonitoring(service);
+                                      },
+                                      child: const Text("Start Monitoring"))
+                                ])),
                       ],
                     ))
             ]));

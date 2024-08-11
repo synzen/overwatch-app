@@ -51,7 +51,7 @@ class _AddCommmuteStopListItemState extends State<AddCommmuteStopListItem> {
 
   void saveStopToCommute(BuildContext context, CommuteRouteRepository repo) {
     repo
-        .insert(CommuteRoute(name: _commuteNameController.text, stops: [
+        .insert(NewCommuteRoute(name: _commuteNameController.text, stops: [
       CommuteRouteStop(
           id: widget.stopId,
           routeId: widget.routeId,

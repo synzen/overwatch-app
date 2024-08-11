@@ -25,7 +25,7 @@ void main() async {
 
   printForDebugging('Initializing database');
   final dbPath = join(await getDatabasesPath(), 'overwatch_db.db');
-  await deleteDatabase(dbPath);
+  // await deleteDatabase(dbPath);
   final database = openDatabase(dbPath, onCreate: (db, version) async {
     await db.execute(
       """
@@ -148,7 +148,9 @@ class _SavedRoutesListState extends State<SavedRoutesList> {
 
                       final components = snapshot.data
                               ?.map((commute) => SavedCommute(
-                                  name: commute.name, stops: commute.stops))
+                                  commuteId: commute.id,
+                                  name: commute.name,
+                                  stops: commute.stops))
                               .toList() ??
                           [];
 

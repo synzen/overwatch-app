@@ -21,7 +21,7 @@ class _AddCommuteDialogState extends State<AddCommuteDialog> {
 
   void saveStopsToCommute(CommuteRouteRepository repo) {
     repo
-        .insert(CommuteRoute(
+        .insert(NewCommuteRoute(
             name: _commuteNameController.text,
             stops: widget.selectedStops.values.toList()))
         .then((_) {
